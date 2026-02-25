@@ -72,7 +72,8 @@ text-align:center;
 color:#611232;
 font-size:18px;
 font-weight:bold;
-margin:10px 0 15px;
+margin-bottom:15px;
+margin-top:10px;
 }
 
 h3{
@@ -105,7 +106,6 @@ border-radius:6px;
 font-size:15px;
 cursor:pointer;
 font-weight:bold;
-margin-bottom:8px;
 }
 
 button:disabled{background:#98989A}
@@ -174,18 +174,18 @@ Solicitud de Retornos Módulos
 
 <label>Tipo de Solicitud</label>
 <select id="tipo" required>
-<option value="nueva" selected>Retorno Para Nueva Exploración</option>
-<option value="horario">Retorno Fuera De Horario</option>
-<option value="sin_extra">Retorno Sin Servicio Extraordinario</option>
-<option value="carril">Retorno Por Equivocación de Carril</option>
-<option value="revision">Solicitud de Revisión De Mercancía Sobre-Dimensionada</option>
+<option selected>Retorno Para Nueva Exploración</option>
+<option>Retorno Fuera De Horario</option>
+<option>Retorno Sin Servicio Extraordinario</option>
+<option>Retorno Por Equivocación de Carril</option>
+<option>Solicitud de Revisión De Mercancía Sobre-Dimensionada</option>
 </select>
 
 <label>Placas</label>
 <textarea id="placas" required></textarea>
 
 <div id="mercanciaDiv" class="hidden">
-<label>Descripción de la Mercancía</label>
+<label>Mercancía</label>
 <textarea id="mercancia"></textarea>
 </div>
 
@@ -250,13 +250,12 @@ form.addEventListener("input",validar);
 form.addEventListener("change",validar);
 
 tipo.addEventListener("change",()=>{
-if(tipo.value==="revision"){
+if(tipo.value==="Solicitud de Revisión De Mercancía Sobre-Dimensionada"){
 mercanciaDiv.classList.remove("hidden");
 mercancia.required=true;
 }else{
 mercanciaDiv.classList.add("hidden");
 mercancia.required=false;
-mercancia.value="";
 }
 validar();
 });
@@ -281,11 +280,11 @@ const cuerpoCorreo=
 "Fecha: "+new Date().toLocaleString()+"\n"+
 "Operación: "+operacion.value+"\n"+
 "Operador: "+operador.value+"\n\n"+
-"Tipo:\n"+tipo.options[tipo.selectedIndex].text+"\n\n"+
+"Tipo:\n"+tipo.value+"\n\n"+
 "Placas:\n"+placas.value+
 (mercancia.value? "\n\nMercancía:\n"+mercancia.value:"");
 
-const asuntoCorreo=operacion.value+" - "+tipo.options[tipo.selectedIndex].text;
+const asuntoCorreo=operacion.value+" - "+tipo.value;
 
 push(ref(database,"retornos"),{
 folio,
@@ -325,9 +324,7 @@ window.open(
 cerrarModal();
 }
 
-window.cerrarModal=function(){
-modal.style.display="none";
-}
+window.cerrarModal=function(){modal.style.display="none";}
 
 validar();
 
