@@ -8,7 +8,7 @@
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#611232">
 
-<!-- FIREBASE COMPAT (IMPORTANTE PARA GITHUB PAGES) -->
+<!-- FIREBASE COMPAT -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
@@ -116,25 +116,6 @@ button:disabled{background:#98989A}
 
 .hidden{display:none}
 
-.modal{
-display:none;
-position:fixed;
-inset:0;
-background:rgba(0,0,0,.5);
-justify-content:center;
-align-items:center;
-}
-
-.modal-content{
-background:#fff;
-padding:20px;
-border-radius:8px;
-max-width:350px;
-width:90%;
-text-align:center;
-border-top:6px solid #611232;
-}
-
 .footer{
 text-align:center;
 font-size:11px;
@@ -206,18 +187,9 @@ Solicitud de Retornos Módulos
 © 2026 Agencia Nacional de Aduanas de México
 </div>
 
-<!-- MODAL PC -->
-<div id="selectorModal" class="modal">
-<div class="modal-content">
-<h3>¿Cómo deseas enviar el correo?</h3>
-<button onclick="abrirApp()">Abrir App Outlook</button>
-<button onclick="abrirWeb()">Abrir Outlook Web</button>
-<button onclick="cerrarModal()">Cancelar</button>
-</div>
-</div>
-
 <script>
 
+// CONFIGURACION REAL
 const firebaseConfig = {
 apiKey: "AIzaSyB_41ENDRUYFLMMsQCXE2Ua8XZjSK5IiOI",
 authDomain: "retornos-anam-altamira.firebaseapp.com",
@@ -240,22 +212,24 @@ const mercancia=document.getElementById("mercancia");
 const operador=document.getElementById("operador");
 const operacion=document.getElementById("operacion");
 const resultado=document.getElementById("resultadoPlacas");
-const modal=document.getElementById("selectorModal");
 
 const destinatarios="jorge.silva@anam.gob.mx,vyc.altamira@anam.gob.mx,alejandra.munoz@anam.gob.mx,nayely.chavez@anam.gob.mx,miguel.herrera@anam.gob.mx,abraham.gomez@anam.gob.mx,daniel.santosh@anam.gob.mx,christian.monrreal@anam.gob.mx,monica.becerra@anam.gob.mx,anahi.santiago@anam.gob.mx";
 
+// FECHA
 function actualizarFecha(){
 document.getElementById("fechaHora").textContent=new Date().toLocaleString();
 }
 setInterval(actualizarFecha,1000);
 actualizarFecha();
 
-placas.addEventListener("input",()=>placas.value=placas.value.toUpperCase());
-
+// VALIDACION
 function validar(){btnEnviar.disabled=!form.checkValidity();}
 form.addEventListener("input",validar);
 form.addEventListener("change",validar);
 
+placas.addEventListener("input",()=>placas.value=placas.value.toUpperCase());
+
+// MOSTRAR MERCANCIA
 tipo.addEventListener("change",()=>{
 if(tipo.value==="revision"){
 mercanciaDiv.classList.remove("hidden");
@@ -275,24 +249,27 @@ return hoy.getFullYear().toString()+
 ("0"+hoy.getDate()).slice(-2);
 }
 
-async function generarFolio(){
-const base=obtenerFechaBase();
-const refFolio=database.ref("folios/"+base);
-return refFolio.transaction(actual=>{
+function generarFolio(){
+const base = obtenerFechaBase();
+const refFolio = database.ref("folios/"+base);
+
+return refFolio.transaction(function(actual){
 return (actual||0)+1;
-}).then(result=>{
+}).then(function(result){
 return "RET-"+base+"-"+("000"+result.snapshot.val()).slice(-3);
 });
 }
 
-form.addEventListener("submit",async function(e){
+// ENVIO ESTABLE ORIGINAL
+form.addEventListener("submit", function(e){
 e.preventDefault();
 if(!form.checkValidity()) return;
 
-const folio=await generarFolio();
-document.getElementById("folio").textContent=folio;
+generarFolio().then(function(folio){
 
-const cuerpo=
+document.getElementById("folio").textContent = folio;
+
+const cuerpo =
 "FOLIO: "+folio+"\n"+
 "Fecha: "+new Date().toLocaleString()+"\n"+
 "Operación: "+operacion.value+"\n"+
@@ -301,53 +278,70 @@ const cuerpo=
 "Placas:\n"+placas.value+
 (mercancia.value? "\n\nMercancía:\n"+mercancia.value:"");
 
-const asunto=operacion.value+" - "+tipo.options[tipo.selectedIndex].text;
+const asunto = operacion.value+" - "+tipo.options[tipo.selectedIndex].text;
 
-await database.ref("retornos").push({
-folio,
-fecha:new Date().toISOString(),
-operacion:operacion.value,
-operador:operador.value,
-tipo:tipo.value,
-placas:placas.value,
-mercancia:mercancia.value||""
+// GUARDAR
+database.ref("retornos").push({
+folio: folio,
+fecha: new Date().toISOString(),
+operacion: operacion.value,
+operador: operador.value,
+tipo: tipo.value,
+placas: placas.value,
+mercancia: mercancia.value || ""
 });
 
-if(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)){
+// ENVIO ORIGINAL QUE SI FUNCIONA
 window.location.href="mailto:"+destinatarios+
 "?subject="+encodeURIComponent(asunto)+
 "&body="+encodeURIComponent(cuerpo);
-}else{
-window.asuntoCorreo=asunto;
-window.cuerpoCorreo=cuerpo;
-modal.style.display="flex";
-}
 
+// LIMPIAR
 form.reset();
 operacion.value="EXPORTACION";
 tipo.value="nueva";
 mercanciaDiv.classList.add("hidden");
 validar();
+
+});
 });
 
-window.abrirApp=function(){
-window.location.href="mailto:"+destinatarios+
-"?subject="+encodeURIComponent(window.asuntoCorreo)+
-"&body="+encodeURIComponent(window.cuerpoCorreo);
-cerrarModal();
+// CONSULTAR PLACAS (TOGGLE)
+document.getElementById("btnConsultar").addEventListener("click",()=>{
+if(!resultado.classList.contains("hidden")){
+resultado.classList.add("hidden");
+resultado.innerHTML="";
+return;
 }
-
-window.abrirWeb=function(){
-window.open(
-"https://outlook.office.com/mail/deeplink/compose?to="+destinatarios+
-"&subject="+encodeURIComponent(window.asuntoCorreo)+
-"&body="+encodeURIComponent(window.cuerpoCorreo),
-"_blank"
-);
-cerrarModal();
+const base=obtenerFechaBase();
+database.ref("retornos").once("value",snap=>{
+let html="<h4>Placas del Día</h4>";
+snap.forEach(child=>{
+if(child.val().folio.includes(base)){
+html+="<p>"+child.val().placas+"</p>";
 }
+});
+resultado.innerHTML=html;
+resultado.classList.remove("hidden");
+});
+});
 
-window.cerrarModal=function(){modal.style.display="none";}
+// EXPORTAR CSV
+document.getElementById("btnExcel").addEventListener("click",()=>{
+database.ref("retornos").once("value",snap=>{
+let csv="Folio,Fecha,Operacion,Operador,Tipo,Placas,Mercancia\n";
+snap.forEach(child=>{
+const d=child.val();
+csv+=`${d.folio},${d.fecha},${d.operacion},${d.operador},${d.tipo},${d.placas},${d.mercancia}\n`;
+});
+const blob=new Blob([csv],{type:"text/csv"});
+const url=URL.createObjectURL(blob);
+const a=document.createElement("a");
+a.href=url;
+a.download="retornos.csv";
+a.click();
+});
+});
 
 validar();
 
