@@ -3,10 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ANAM</title>
-
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#611232">
+<title>ANAM - Retornos</title>
 
 <style>
 body{
@@ -16,7 +13,6 @@ background:#F4F4F4;
 color:#161A1D;
 }
 
-/* BARRA */
 .top-bar{
 background:#611232;
 color:#fff;
@@ -26,62 +22,24 @@ font-size:13px;
 font-weight:bold;
 }
 
-/* CONTENEDOR */
 .container{
 position:relative;
-background:#ffffffee;
+background:#ffffff;
 max-width:680px;
 margin:60px auto 20px;
-padding:35px 20px 25px;
+padding:30px;
 border-radius:14px;
 box-shadow:0 10px 25px rgba(0,0,0,0.1);
 border-top:8px solid #1E5B4F;
-overflow:hidden;
-transition:0.3s;
+transition:.3s;
 }
 
-/* COLOR SOBREDIMENSIONADO */
 .container.sobredimension{
 border-top:8px solid #C58F00;
 background:#fff9e6;
 }
 
-.container::before{
-content:"";
-position:absolute;
-inset:0;
-background:url("logo-anam.png") center center no-repeat;
-background-size:280px;
-opacity:0.05;
-pointer-events:none;
-}
-
-/* LOGO */
-.logo-gota{
-position:absolute;
-top:-35px;
-left:50%;
-transform:translateX(-50%);
-width:80px;
-height:80px;
-border-radius:50%;
-display:flex;
-justify-content:center;
-align-items:center;
-background:rgba(255,255,255,0.6);
-box-shadow:0 8px 18px rgba(0,0,0,0.2);
-border:3px solid #A57F2C;
-z-index:2;
-}
-.logo-gota img{width:60px;}
-
-.title{
-text-align:center;
-color:#611232;
-font-size:18px;
-font-weight:bold;
-margin:10px 0 15px;
-}
+.hidden{display:none}
 
 label{font-weight:bold;font-size:14px;}
 
@@ -114,8 +72,6 @@ background:#98989A;
 cursor:not-allowed;
 }
 
-.hidden{display:none}
-
 .modal{
 display:none;
 position:fixed;
@@ -134,13 +90,6 @@ width:90%;
 text-align:center;
 border-top:6px solid #611232;
 }
-
-.footer{
-text-align:center;
-font-size:11px;
-color:#98989A;
-margin:20px 0;
-}
 </style>
 </head>
 
@@ -152,28 +101,18 @@ Gobierno de México | Agencia Nacional de Aduanas de México
 
 <div class="container" id="container">
 
-<div class="logo-gota">
-<img src="logo-anam2.png">
-</div>
-
-<div class="title">Solicitud de Retornos Módulos</div>
+<h3>Solicitud de Retornos</h3>
 
 <p><strong>Folio:</strong> <span id="folio">--</span></p>
-<p><strong>Fecha:</strong> <span id="fechaHora"></span></p>
 
 <form id="formRetorno">
-
-<label>Tipo de Operación</label>
-<select id="operacion" required>
-<option>IMPORTACION</option>
-<option selected>EXPORTACION</option>
-</select>
 
 <label>Operador</label>
 <input type="text" id="operador" required>
 
 <label>Tipo de Solicitud</label>
 <select id="tipo" required>
+<option value="">Seleccione...</option>
 <option>Retorno Para Nueva Exploración</option>
 <option>Retorno Fuera De Horario</option>
 <option>Retorno Sin Servicio Extraordinario</option>
@@ -191,19 +130,13 @@ Gobierno de México | Agencia Nacional de Aduanas de México
 
 <button type="submit" id="btnGenerar" disabled>Generar Correo</button>
 <button type="button" id="btnCancelar" disabled>Cancelar</button>
-<button type="button" id="btnVer">Ver placas del día</button>
-<button type="button" id="btnExcel">Descargar Excel del día</button>
 
 </form>
 </div>
 
-<div class="footer">
-© 2026 Agencia Nacional de Aduanas de México
-</div>
-
 <div id="selectorModal" class="modal">
 <div class="modal-content">
-<h3>¿Cómo deseas enviar el correo?</h3>
+<h3>¿Cómo deseas enviar?</h3>
 <button onclick="abrirApp()">Abrir App Outlook</button>
 <button onclick="abrirWeb()">Abrir Outlook Web</button>
 <button onclick="cerrarModal()">Cancelar</button>
@@ -213,155 +146,147 @@ Gobierno de México | Agencia Nacional de Aduanas de México
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, runTransaction, push, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+/* 🔹 CONFIGURACIÓN FIREBASE */
 const firebaseConfig = {
-  apiKey: "TU_API",
-  authDomain: "TU_DOMINIO",
-  databaseURL: "TU_DB",
-  projectId: "TU_ID",
+  apiKey: "TU_API_KEY",
+  authDomain: "TU_AUTH_DOMAIN",
+  databaseURL: "TU_DATABASE_URL",
+  projectId: "TU_PROJECT_ID",
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-const form=document.getElementById("formRetorno");
-const btnGenerar=document.getElementById("btnGenerar");
-const btnCancelar=document.getElementById("btnCancelar");
-const placas=document.getElementById("placas");
-const operador=document.getElementById("operador");
-const tipo=document.getElementById("tipo");
-const descripcion=document.getElementById("descripcion");
-const descripcionDiv=document.getElementById("descripcionDiv");
-const container=document.getElementById("container");
+/* 🔹 ELEMENTOS */
+const form = document.getElementById("formRetorno");
+const operador = document.getElementById("operador");
+const tipo = document.getElementById("tipo");
+const placas = document.getElementById("placas");
+const descripcion = document.getElementById("descripcion");
+const descripcionDiv = document.getElementById("descripcionDiv");
+const btnGenerar = document.getElementById("btnGenerar");
+const btnCancelar = document.getElementById("btnCancelar");
+const container = document.getElementById("container");
+const folioSpan = document.getElementById("folio");
 
+/* 🔹 FECHA */
 function fechaActual(){
-return new Date().toISOString().split("T")[0].replace(/-/g,"");
+  return new Date().toISOString().split("T")[0].replace(/-/g,"");
 }
 
-function actualizarFecha(){
-document.getElementById("fechaHora").textContent=new Date().toLocaleString();
-}
-actualizarFecha();
-setInterval(actualizarFecha,1000);
+/* 🔹 FOLIO CONSECUTIVO */
+async function generarFolio(){
+  const fecha = fechaActual();
+  const contadorRef = ref(db,"folios/"+fecha);
 
+  const resultado = await runTransaction(contadorRef,(actual)=>{
+    return (actual || 0) + 1;
+  });
+
+  const numero = resultado.snapshot.val();
+  return `RET-${fecha}-${numero.toString().padStart(3,"0")}`;
+}
+
+/* 🔹 VALIDACIÓN */
 function validar(){
-btnGenerar.disabled=!form.checkValidity();
-btnCancelar.disabled=form.checkValidity()===false && 
-!operador.value && !placas.value && !descripcion.value;
+
+  let completo = operador.value.trim()!=="" &&
+                 tipo.value!=="" &&
+                 placas.value.trim()!=="";
+
+  if(tipo.value==="Solicitud de Revisión De Mercancía Sobre-Dimensionada"){
+    completo = completo && descripcion.value.trim()!=="";
+  }
+
+  btnGenerar.disabled=!completo;
+
+  let hayDatos = operador.value.trim()!=="" ||
+                 placas.value.trim()!=="" ||
+                 descripcion.value.trim()!=="";
+
+  btnCancelar.disabled=!hayDatos;
 }
 
-form.addEventListener("input",validar);
+operador.addEventListener("input",validar);
+placas.addEventListener("input",()=>{
+  placas.value=placas.value.toUpperCase();
+  validar();
+});
+descripcion.addEventListener("input",validar);
 
 tipo.addEventListener("change",()=>{
-if(tipo.value.includes("Sobre-Dimensionada")){
-descripcionDiv.classList.remove("hidden");
-descripcion.required=true;
-container.classList.add("sobredimension");
-}else{
-descripcionDiv.classList.add("hidden");
-descripcion.required=false;
-descripcion.value="";
-container.classList.remove("sobredimension");
-}
-validar();
+  if(tipo.value==="Solicitud de Revisión De Mercancía Sobre-Dimensionada"){
+    descripcionDiv.classList.remove("hidden");
+    descripcion.required=true;
+    container.classList.add("sobredimension");
+  }else{
+    descripcionDiv.classList.add("hidden");
+    descripcion.required=false;
+    descripcion.value="";
+    container.classList.remove("sobredimension");
+  }
+  validar();
 });
 
-placas.addEventListener("input",()=>placas.value=placas.value.toUpperCase());
+/* 🔹 GENERAR */
+form.addEventListener("submit", async function(e){
+  e.preventDefault();
 
-async function generarFolio(){
-const fecha=fechaActual();
-const contadorRef=ref(db,"folios/"+fecha);
-const resultado=await runTransaction(contadorRef,(actual)=>(actual||0)+1);
-return `RET-${fecha}-${resultado.snapshot.val().toString().padStart(3,"0")}`;
-}
+  btnGenerar.disabled=true;
 
-form.addEventListener("submit",async e=>{
-e.preventDefault();
+  const folio = await generarFolio();
+  folioSpan.textContent = folio;
 
-const folio=await generarFolio();
-document.getElementById("folio").textContent=folio;
-
-let cuerpo=`Folio: ${folio}
+  let cuerpo = `Folio: ${folio}
 Operador: ${operador.value}
 Tipo: ${tipo.value}
 
 Placas:
 ${placas.value}`;
 
-if(descripcion.value){
-cuerpo+=`\n\nDescripción:\n${descripcion.value}`;
-}
+  if(descripcion.value){
+    cuerpo+=`\n\nDescripción:\n${descripcion.value}`;
+  }
 
-await push(ref(db,"registros/"+fechaActual()),{
-folio,
-operador:operador.value,
-tipo:tipo.value,
-placas:placas.value,
-descripcion:descripcion.value || "",
-fechaHora:new Date().toLocaleString()
+  if(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)){
+    window.location.href="mailto:jorge.silva@anam.gob.mx?subject="+encodeURIComponent(tipo.value)+"&body="+encodeURIComponent(cuerpo);
+  }else{
+    window.asunto=tipo.value;
+    window.cuerpo=cuerpo;
+    document.getElementById("selectorModal").style.display="flex";
+  }
+
+  form.reset();
+  descripcionDiv.classList.add("hidden");
+  container.classList.remove("sobredimension");
+  btnCancelar.disabled=true;
 });
 
-if(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)){
-window.location.href="mailto:jorge.silva@anam.gob.mx?subject="+encodeURIComponent(tipo.value)+"&body="+encodeURIComponent(cuerpo);
-}else{
-document.getElementById("selectorModal").style.display="flex";
-window.asuntoCorreo=tipo.value;
-window.cuerpoCorreo=cuerpo;
-}
+/* 🔹 CANCELAR */
+btnCancelar.onclick=function(){
+  form.reset();
+  descripcionDiv.classList.add("hidden");
+  container.classList.remove("sobredimension");
+  btnGenerar.disabled=true;
+  btnCancelar.disabled=true;
+};
 
-form.reset();
-descripcionDiv.classList.add("hidden");
-container.classList.remove("sobredimension");
-btnGenerar.disabled=true;
-btnCancelar.disabled=true;
-});
-
+/* 🔹 OUTLOOK */
 window.abrirApp=function(){
-window.location.href="mailto:jorge.silva@anam.gob.mx?subject="+encodeURIComponent(window.asuntoCorreo)+"&body="+encodeURIComponent(window.cuerpoCorreo);
-cerrarModal();
+  window.location.href="mailto:jorge.silva@anam.gob.mx?subject="+encodeURIComponent(window.asunto)+"&body="+encodeURIComponent(window.cuerpo);
+  cerrarModal();
 }
 
 window.abrirWeb=function(){
-window.open("https://outlook.office.com/mail/deeplink/compose?to=jorge.silva@anam.gob.mx&subject="+encodeURIComponent(window.asuntoCorreo)+"&body="+encodeURIComponent(window.cuerpoCorreo),"_blank");
-cerrarModal();
+  window.open("https://outlook.office.com/mail/deeplink/compose?to=jorge.silva@anam.gob.mx&subject="+encodeURIComponent(window.asunto)+"&body="+encodeURIComponent(window.cuerpo),"_blank");
+  cerrarModal();
 }
 
 window.cerrarModal=function(){
-document.getElementById("selectorModal").style.display="none";
+  document.getElementById("selectorModal").style.display="none";
 }
-
-btnCancelar.onclick=function(){
-form.reset();
-descripcionDiv.classList.add("hidden");
-container.classList.remove("sobredimension");
-btnGenerar.disabled=true;
-btnCancelar.disabled=true;
-};
-
-document.getElementById("btnVer").onclick=async()=>{
-const snap=await get(ref(db,"registros/"+fechaActual()));
-if(!snap.exists()) return alert("No hay registros hoy");
-let texto="PLACAS DEL DÍA\n\n";
-snap.forEach(c=>texto+=c.val().placas+" - "+c.val().folio+"\n");
-alert(texto);
-};
-
-document.getElementById("btnExcel").onclick=async()=>{
-const snap=await get(ref(db,"registros/"+fechaActual()));
-if(!snap.exists()) return alert("No hay registros hoy");
-let csv="Folio,Operador,Tipo,Placas,Descripcion,FechaHora\n";
-snap.forEach(c=>{
-const d=c.val();
-csv+=`${d.folio},${d.operador},${d.tipo},${d.placas},${d.descripcion},${d.fechaHora}\n`;
-});
-const blob=new Blob([csv],{type:"text/csv"});
-const url=URL.createObjectURL(blob);
-const a=document.createElement("a");
-a.href=url;
-a.download="Registros_"+fechaActual()+".csv";
-a.click();
-};
 
 </script>
 
