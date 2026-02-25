@@ -214,7 +214,7 @@ Solicitud de Retornos Módulos
 
 <hr>
 
-<button type="button" onclick="consultarPlacas()">Consultar Placas del Día</button>
+<button type="button" id="btnConsultar" onclick="consultarPlacas()">Consultar Placas del Día</button>
 <button type="button" onclick="exportarExcel()">Exportar a Excel</button>
 
 <div id="tablaResultados"></div>
@@ -261,6 +261,7 @@ const placas=document.getElementById("placas");
 const operacion=document.getElementById("operacion");
 const operador=document.getElementById("operador");
 const modal=document.getElementById("selectorModal");
+const btnConsultar=document.getElementById("btnConsultar");
 
 let tablaVisible=false;
 
@@ -307,12 +308,14 @@ return;
 const folio=await generarFolio();
 document.getElementById("folio").textContent=folio;
 
+const tipoTexto = tipo.options[tipo.selectedIndex].text;
+
 const cuerpo=
 "FOLIO: "+folio+"\n"+
 "Fecha: "+new Date().toLocaleString()+"\n"+
 "Operación: "+operacion.value+"\n"+
 "Operador: "+operador.value+"\n\n"+
-"Tipo:\n"+tipo.options[tipo.selectedIndex].text+"\n\n"+
+"Tipo:\n"+tipoTexto+"\n\n"+
 "Placas:\n"+placas.value+
 (mercancia.value? "\n\nMercancía:\n"+mercancia.value:"");
 
@@ -326,10 +329,9 @@ placas:placas.value,
 mercancia:mercancia.value || ""
 });
 
-window.asunto="Solicitud "+folio;
+window.asunto=operacion.value+" - "+tipoTexto;
 window.cuerpo=cuerpo;
 
-// Detectar móvil
 const esMovil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 if(esMovil){
@@ -340,35 +342,12 @@ window.location.href="mailto:"+destinatarios+
 modal.style.display="flex";
 }
 
-// LIMPIAR FORMULARIO
 form.reset();
 mercanciaDiv.classList.add("hidden");
 mercancia.required=false;
 mercancia.value="";
 document.getElementById("folio").textContent="--";
-
 });
-
-window.abrirApp=function(){
-window.location.href="mailto:"+destinatarios+
-"?subject="+encodeURIComponent(window.asunto)+
-"&body="+encodeURIComponent(window.cuerpo);
-cerrarModal();
-}
-
-window.abrirWeb=function(){
-window.open(
-"https://outlook.office.com/mail/deeplink/compose?to="+encodeURIComponent(destinatarios)+
-"&subject="+encodeURIComponent(window.asunto)+
-"&body="+encodeURIComponent(window.cuerpo),
-"_blank"
-);
-cerrarModal();
-}
-
-window.cerrarModal=function(){
-modal.style.display="none";
-}
 
 window.consultarPlacas=async function(){
 
@@ -376,6 +355,7 @@ const contenedor=document.getElementById("tablaResultados");
 
 if(tablaVisible){
 contenedor.innerHTML="";
+btnConsultar.textContent="Consultar Placas del Día";
 tablaVisible=false;
 return;
 }
@@ -395,6 +375,7 @@ html+="<tr><td>"+d.operador+"</td><td>"+d.placas+"</td></tr>";
 html+="</table>";
 
 contenedor.innerHTML=html;
+btnConsultar.textContent="Ocultar Placas del Día";
 tablaVisible=true;
 }
 
