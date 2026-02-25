@@ -53,11 +53,6 @@ button:disabled{opacity:.5}
 .exportacion h2{color:#004578}
 .exportacion button{background:#004578}
 
-.install-btn{
-background:#004578;
-margin-bottom:15px;
-}
-
 .hidden{display:none}
 
 /* MODAL */
@@ -148,6 +143,7 @@ const tipo = document.getElementById("tipo");
 const placas = document.getElementById("placas");
 const mercanciaDiv = document.getElementById("mercanciaDiv");
 const mercancia = document.getElementById("mercancia");
+const operador = document.getElementById("operador");
 const container = document.querySelector(".container");
 const modal = document.getElementById("selectorModal");
 
@@ -232,7 +228,7 @@ asuntoCorreo=`${operacion.value} - ${tipo.value}`;
 modal.style.display="flex";
 });
 
-/* ENVIAR SEGÚN OPCIÓN */
+/* ENVIAR CORREO */
 function enviarCorreo(metodo){
 
 const to="jorge.silva@anam.gob.mx";
@@ -249,7 +245,6 @@ const listaCC=[
 "anahi.santiago@anam.gob.mx"
 ];
 
-// IMPORTANTE: separados por coma
 const cc = encodeURIComponent(listaCC.join(","));
 const subject = encodeURIComponent(asuntoCorreo);
 const body = encodeURIComponent(cuerpoCorreo);
@@ -270,6 +265,13 @@ cerrarModal();
 form.reset();
 validar();
 }
+
+/* CERRAR MODAL */
+function cerrarModal(){
+modal.style.display="none";
+}
+
+validar();
 
 </script>
 </body>
