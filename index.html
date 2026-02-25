@@ -107,8 +107,6 @@ cursor:pointer;
 font-weight:bold;
 }
 
-button:disabled{background:#98989A}
-
 .hidden{display:none}
 
 .modal{
@@ -188,7 +186,7 @@ Solicitud de Retornos Módulos
 <textarea id="mercancia"></textarea>
 </div>
 
-<button type="submit" id="btnEnviar">Generar Correo</button>
+<button type="submit">Generar Correo</button>
 
 </form>
 </div>
@@ -212,13 +210,13 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getDatabase, ref, runTransaction, push } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
-apiKey: "TU_API_KEY_REAL",
-authDomain: "TU_AUTH_DOMAIN_REAL",
-databaseURL: "TU_DATABASE_URL_REAL",
-projectId: "TU_PROJECT_ID_REAL",
-storageBucket: "TU_STORAGE_BUCKET_REAL",
-messagingSenderId: "TU_SENDER_ID_REAL",
-appId: "TU_APP_ID_REAL"
+apiKey: "AIzaSyB_41ENDRUYFLMMsQCXE2Ua8XZjSK5IiOI",
+authDomain: "retornos-anam-altamira.firebaseapp.com",
+databaseURL: "https://retornos-anam-altamira-default-rtdb.firebaseio.com",
+projectId: "retornos-anam-altamira",
+storageBucket: "retornos-anam-altamira.firebasestorage.app",
+messagingSenderId: "975848132753",
+appId: "1:975848132753:web:cdb84e00b5d33006ffef30"
 };
 
 const app = initializeApp(firebaseConfig);
