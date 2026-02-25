@@ -21,11 +21,7 @@ border-top:8px solid #6A0F49;
 transition:.3s ease;
 }
 
-h2{
-color:#6A0F49;
-transition:.3s ease;
-}
-
+h2{color:#6A0F49;transition:.3s ease}
 label{font-weight:bold}
 
 select,input,textarea{
@@ -36,9 +32,7 @@ border-radius:4px;
 border:1px solid #ccc
 }
 
-#placas{
-text-transform:uppercase;
-}
+#placas{text-transform:uppercase}
 
 button{
 background:#6A0F49;
@@ -54,21 +48,10 @@ transition:.3s ease;
 
 button:disabled{opacity:.5}
 
-.importacion{
-border-top-color:#6A0F49;
-}
-
-.exportacion{
-border-top-color:#004578;
-}
-
-.exportacion h2{
-color:#004578;
-}
-
-.exportacion button{
-background:#004578;
-}
+.importacion{border-top-color:#6A0F49}
+.exportacion{border-top-color:#004578}
+.exportacion h2{color:#004578}
+.exportacion button{background:#004578}
 
 .install-btn{
 background:#004578;
@@ -77,13 +60,33 @@ margin-bottom:15px;
 
 .hidden{display:none}
 
+/* MODAL */
+.modal{
+display:none;
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.5);
+justify-content:center;
+align-items:center;
+}
+
+.modal-content{
+background:#fff;
+padding:25px;
+border-radius:8px;
+max-width:400px;
+width:90%;
+text-align:center;
+}
+
+.modal-content button{
+margin-top:10px;
+}
 </style>
 </head>
 <body>
 
 <div class="container">
-
-<button id="btnInstalar" class="install-btn hidden">Instalar Aplicación</button>
 
 <h2>Módulos Retornos</h2>
 
@@ -125,28 +128,17 @@ margin-bottom:15px;
 </form>
 </div>
 
+<!-- MODAL -->
+<div id="selectorModal" class="modal">
+  <div class="modal-content">
+    <h3>¿Cómo deseas enviar el correo?</h3>
+    <button onclick="enviarCorreo('app')">Abrir App de Outlook</button>
+    <button onclick="enviarCorreo('web')">Abrir Outlook Web</button>
+    <button onclick="cerrarModal()">Cancelar</button>
+  </div>
+</div>
+
 <script>
-
-/* SERVICE WORKER */
-if ('serviceWorker' in navigator) {
-navigator.serviceWorker.register('sw.js');
-}
-
-/* BOTÓN INSTALAR */
-let deferredPrompt;
-const btnInstalar = document.getElementById("btnInstalar");
-
-window.addEventListener('beforeinstallprompt', (e) => {
-e.preventDefault();
-deferredPrompt = e;
-btnInstalar.classList.remove("hidden");
-});
-
-btnInstalar.addEventListener('click', async () => {
-deferredPrompt.prompt();
-await deferredPrompt.userChoice;
-btnInstalar.classList.add("hidden");
-});
 
 /* VARIABLES */
 const form = document.getElementById("formRetorno");
@@ -157,6 +149,10 @@ const placas = document.getElementById("placas");
 const mercanciaDiv = document.getElementById("mercanciaDiv");
 const mercancia = document.getElementById("mercancia");
 const container = document.querySelector(".container");
+const modal = document.getElementById("selectorModal");
+
+let cuerpoCorreo="";
+let asuntoCorreo="";
 
 /* FECHA */
 function actualizarFecha(){
@@ -172,22 +168,16 @@ btnEnviar.disabled=!form.checkValidity();
 form.addEventListener("input",validar);
 form.addEventListener("change",validar);
 
-/* MAYÚSCULAS EN PLACAS */
+/* MAYÚSCULAS */
 placas.addEventListener("input", function(){
-this.value = this.value.toUpperCase();
+this.value=this.value.toUpperCase();
 });
 
-/* CAMBIO DE COLOR */
+/* COLOR SEGÚN OPERACIÓN */
 operacion.addEventListener("change", function(){
 container.classList.remove("importacion","exportacion");
-
-if(this.value==="IMPORTACION"){
-container.classList.add("importacion");
-}
-
-if(this.value==="EXPORTACION"){
-container.classList.add("exportacion");
-}
+if(this.value==="IMPORTACION") container.classList.add("importacion");
+if(this.value==="EXPORTACION") container.classList.add("exportacion");
 });
 
 /* MOSTRAR MERCANCÍA */
@@ -214,7 +204,7 @@ localStorage.setItem("folio_"+base,contador);
 return `RET-${base}-${String(contador).padStart(3,'0')}`;
 }
 
-/* ENVÍO OUTLOOK WEB */
+/* SUBMIT */
 form.addEventListener("submit",function(e){
 e.preventDefault();
 if(!form.checkValidity()) return;
@@ -222,7 +212,7 @@ if(!form.checkValidity()) return;
 const folio=generarFolio();
 document.getElementById("folio").textContent=folio;
 
-let cuerpo=`FOLIO: ${folio}
+cuerpoCorreo=`FOLIO: ${folio}
 Fecha: ${document.getElementById("fechaHora").textContent}
 Operación: ${operacion.value}
 Operador: ${operador.value}
@@ -234,24 +224,52 @@ Placas:
 ${placas.value}`;
 
 if(!mercanciaDiv.classList.contains("hidden")){
-cuerpo+=`\n\nMercancía:\n${mercancia.value}`;
+cuerpoCorreo+=`\n\nMercancía:\n${mercancia.value}`;
 }
 
-/* DESTINATARIO */
+asuntoCorreo=`${operacion.value} - ${tipo.value}`;
+
+modal.style.display="flex";
+});
+
+/* ENVIAR SEGÚN OPCIÓN */
+function enviarCorreo(metodo){
+
 const to="jorge.silva@anam.gob.mx";
 
-/* COPIAS */
-/*const cc="vyc.altamira@anam.gob.mx;alejandra.munoz@anam.gob.mx;nayely.chavez@anam.gob.mx;miguel.herrera@anam.gob.mx;abraham.gomez@anam.gob.mx;daniel.santosh@anam.gob.mx;christian.monrreal@anam.gob.mx;monica.becerra@anam.gob.mx;anahi.santiago@anam.gob.mx";*/
+const listaCC=[
+"vyc.altamira@anam.gob.mx",
+"alejandra.munoz@anam.gob.mx",
+"nayely.chavez@anam.gob.mx",
+"miguel.herrera@anam.gob.mx",
+"abraham.gomez@anam.gob.mx",
+"daniel.santosh@anam.gob.mx",
+"christian.monrreal@anam.gob.mx",
+"monica.becerra@anam.gob.mx",
+"anahi.santiago@anam.gob.mx"
+];
 
-const subject=encodeURIComponent(`${operacion.value} - ${tipo.value}`);
-const body=encodeURIComponent(cuerpo);
+const cc=encodeURIComponent(listaCC.join(";"));
+const subject=encodeURIComponent(asuntoCorreo);
+const body=encodeURIComponent(cuerpoCorreo);
 
+if(metodo==="web"){
 window.open(`https://outlook.office.com/mail/deeplink/compose?to=${to}&cc=${cc}&subject=${subject}&body=${body}`,"_blank");
+}
 
+if(metodo==="app"){
+window.location.href=`mailto:${to}?cc=${cc}&subject=${subject}&body=${body}`;
+}
+
+cerrarModal();
 form.reset();
 validar();
+}
 
-});
+/* CERRAR MODAL */
+function cerrarModal(){
+modal.style.display="none";
+}
 
 validar();
 
