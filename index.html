@@ -3,140 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ANAM - Solicitud de Retornos</title>
+<title>ANAM</title>
 
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#611232">
 
 <style>
-body{
-margin:0;
-font-family:Arial, Helvetica, sans-serif;
-background:#F4F4F4;
-color:#161A1D;
-}
-
-.top-bar{
-background:#611232;
-color:#fff;
-padding:10px 15px;
-font-size:13px;
-font-weight:bold;
-text-align:center;
-}
-
-.container{
-position:relative;
-background:#ffffffee;
-max-width:680px;
-margin:60px auto 20px;
-padding:35px 20px 25px 20px;
-border-radius:14px;
-box-shadow:0 10px 25px rgba(0,0,0,0.1);
-border-top:8px solid #1E5B4F;
-overflow:hidden;
-}
-
-.container::before{
-content:"";
-position:absolute;
-inset:0;
-background:url("logo-anam.png") center center no-repeat;
-background-size:280px;
-opacity:0.05;
-pointer-events:none;
-}
-
-.logo-gota{
-position:absolute;
-top:-35px;
-left:50%;
-transform:translateX(-50%);
-width:80px;
-height:80px;
-border-radius:50%;
-display:flex;
-justify-content:center;
-align-items:center;
-backdrop-filter:blur(10px);
-background:rgba(255,255,255,0.6);
-box-shadow:0 8px 18px rgba(0,0,0,0.2);
-border:3px solid #A57F2C;
-z-index:2;
-}
-
+body{margin:0;font-family:Arial;background:#F4F4F4;color:#161A1D;}
+.top-bar{background:#611232;color:#fff;padding:10px;text-align:center;font-size:13px;font-weight:bold;}
+.container{position:relative;background:#ffffffee;max-width:680px;margin:60px auto 20px;padding:35px 20px 25px;border-radius:14px;box-shadow:0 10px 25px rgba(0,0,0,0.1);border-top:8px solid #1E5B4F;overflow:hidden;}
+.container::before{content:"";position:absolute;inset:0;background:url("logo-anam.png") center no-repeat;background-size:280px;opacity:0.05;}
+.logo-gota{position:absolute;top:-35px;left:50%;transform:translateX(-50%);width:80px;height:80px;border-radius:50%;display:flex;justify-content:center;align-items:center;background:rgba(255,255,255,0.6);box-shadow:0 8px 18px rgba(0,0,0,0.2);border:3px solid #A57F2C;}
 .logo-gota img{width:60px;}
-
-.title{
-text-align:center;
-color:#611232;
-font-size:18px;
-font-weight:bold;
-margin-bottom:15px;
-margin-top:10px;
-}
-
-h3{
-color:#611232;
-border-bottom:2px solid #A57F2C;
-padding-bottom:6px;
-font-size:15px;
-}
-
+.title{text-align:center;color:#611232;font-size:18px;font-weight:bold;margin:10px 0 15px;}
 label{font-weight:bold;font-size:14px;}
-
-select,input,textarea{
-width:100%;
-padding:9px;
-margin:6px 0 14px;
-border-radius:6px;
-border:1px solid #ccc;
-font-size:14px;
-}
-
+select,input,textarea{width:100%;padding:9px;margin:6px 0 14px;border-radius:6px;border:1px solid #ccc;font-size:14px;}
 #placas{text-transform:uppercase}
-
-button{
-background:#1E5B4F;
-color:#fff;
-padding:11px;
-border:none;
-width:100%;
-border-radius:6px;
-font-size:15px;
-cursor:pointer;
-font-weight:bold;
-}
-
+button{background:#1E5B4F;color:#fff;padding:11px;border:none;width:100%;border-radius:6px;font-size:15px;cursor:pointer;font-weight:bold;margin-bottom:10px;}
 button:disabled{background:#98989A}
-
 .hidden{display:none}
-
-.modal{
-display:none;
-position:fixed;
-inset:0;
-background:rgba(0,0,0,.5);
-justify-content:center;
-align-items:center;
-}
-
-.modal-content{
-background:#fff;
-padding:20px;
-border-radius:8px;
-max-width:350px;
-width:90%;
-text-align:center;
-border-top:6px solid #611232;
-}
-
-.footer{
-text-align:center;
-font-size:11px;
-color:#98989A;
-margin:20px 0;
-}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);justify-content:center;align-items:center;}
+.modal-content{background:#fff;padding:20px;border-radius:8px;max-width:350px;width:90%;text-align:center;border-top:6px solid #611232;}
+.footer{text-align:center;font-size:11px;color:#98989A;margin:20px 0;}
 </style>
 </head>
 
@@ -147,16 +35,11 @@ Gobierno de México | Agencia Nacional de Aduanas de México
 </div>
 
 <div class="container">
-
 <div class="logo-gota">
 <img src="logo-anam2.png">
 </div>
 
-<div class="title">
-Solicitud de Retornos Módulos
-</div>
-
-<h3>Generador de Solicitudes</h3>
+<div class="title">Solicitud de Retornos Módulos</div>
 
 <p><strong>Folio:</strong> <span id="folio">--</span></p>
 <p><strong>Fecha:</strong> <span id="fechaHora"></span></p>
@@ -190,6 +73,9 @@ Solicitud de Retornos Módulos
 </div>
 
 <button type="submit" id="btnEnviar" disabled>Generar Correo</button>
+<button type="button" id="btnConfirmar" disabled>Confirmar Envío</button>
+<button type="button" id="btnVer">Ver placas del día</button>
+<button type="button" id="btnExcel">Descargar Excel del día</button>
 
 </form>
 </div>
@@ -209,122 +95,143 @@ Solicitud de Retornos Módulos
 
 <script type="module">
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, runTransaction, push, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+/* 🔥 TU CONFIG YA INTEGRADA */
 const firebaseConfig = {
-apiKey: "AIzaSyB_41ENDRUYFLMMsQCXE2Ua8XZjSK5IiOI",
-authDomain: "retornos-anam-altamira.firebaseapp.com",
-databaseURL: "https://retornos-anam-altamira-default-rtdb.firebaseio.com",
-projectId: "retornos-anam-altamira",
-storageBucket: "retornos-anam-altamira.firebasestorage.app",
-messagingSenderId: "975848132753",
-appId: "1:975848132753:web:cdb84e00b5d33006ffef30"
+  apiKey: "AIzaSyB_41ENDRUYFLMMsQCXE2Ua8XZjSK5IiOI",
+  authDomain: "retornos-anam-altamira.firebaseapp.com",
+  databaseURL: "https://retornos-anam-altamira-default-rtdb.firebaseio.com",
+  projectId: "retornos-anam-altamira",
+  storageBucket: "retornos-anam-altamira.firebasestorage.app",
+  messagingSenderId: "975848132753",
+  appId: "1:975848132753:web:cdb84e00b5d33006ffef30"
 };
 
 const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
+const db = getDatabase(app);
 
 const form=document.getElementById("formRetorno");
 const btnEnviar=document.getElementById("btnEnviar");
-const tipo=document.getElementById("tipo");
+const btnConfirmar=document.getElementById("btnConfirmar");
 const placas=document.getElementById("placas");
-const mercanciaDiv=document.getElementById("mercanciaDiv");
-const mercancia=document.getElementById("mercancia");
 const operador=document.getElementById("operador");
 const operacion=document.getElementById("operacion");
+const tipo=document.getElementById("tipo");
 const modal=document.getElementById("selectorModal");
 
-const destinatarios="jorge.silva@anam.gob.mx,vyc.altamira@anam.gob.mx,alejandra.munoz@anam.gob.mx,nayely.chavez@anam.gob.mx,miguel.herrera@anam.gob.mx,abraham.gomez@anam.gob.mx,daniel.santosh@anam.gob.mx,christian.monrreal@anam.gob.mx,monica.becerra@anam.gob.mx,anahi.santiago@anam.gob.mx";
+let datosPendientes=null;
+let cuerpoCorreo="";
+let asuntoCorreo="";
+
+function fechaActual(){
+return new Date().toISOString().split("T")[0].replace(/-/g,"");
+}
 
 function actualizarFecha(){
 document.getElementById("fechaHora").textContent=new Date().toLocaleString();
 }
-setInterval(actualizarFecha,1000);
 actualizarFecha();
+setInterval(actualizarFecha,1000);
+
+function validar(){
+btnEnviar.disabled=!form.checkValidity();
+}
+form.addEventListener("input",validar);
 
 placas.addEventListener("input",()=>placas.value=placas.value.toUpperCase());
 
-function validar(){btnEnviar.disabled=!form.checkValidity();}
-form.addEventListener("input",validar);
-form.addEventListener("change",validar);
-
-tipo.addEventListener("change",()=>{
-if(tipo.value==="Solicitud de Revisión De Mercancía Sobre-Dimensionada"){
-mercanciaDiv.classList.remove("hidden");
-mercancia.required=true;
-}else{
-mercanciaDiv.classList.add("hidden");
-mercancia.required=false;
-}
-validar();
-});
-
-function generarFolio(){
-const hoy=new Date();
-const base=hoy.getFullYear().toString()+
-("0"+(hoy.getMonth()+1)).slice(-2)+
-("0"+hoy.getDate()).slice(-2);
-return "RET-"+base+"-"+Date.now().toString().slice(-4);
+async function generarFolio(){
+const fecha=fechaActual();
+const contadorRef=ref(db,"folios/"+fecha);
+const resultado=await runTransaction(contadorRef,(actual)=>(actual||0)+1);
+return `RET-${fecha}-${resultado.snapshot.val().toString().padStart(3,"0")}`;
 }
 
-form.addEventListener("submit",function(e){
+form.addEventListener("submit",e=>{
 e.preventDefault();
-if(!form.checkValidity()) return;
-
-const folio=generarFolio();
-document.getElementById("folio").textContent=folio;
-
-const cuerpoCorreo=
-"FOLIO: "+folio+"\n"+
-"Fecha: "+new Date().toLocaleString()+"\n"+
-"Operación: "+operacion.value+"\n"+
-"Operador: "+operador.value+"\n\n"+
-"Tipo:\n"+tipo.value+"\n\n"+
-"Placas:\n"+placas.value+
-(mercancia.value? "\n\nMercancía:\n"+mercancia.value:"");
-
-const asuntoCorreo=operacion.value+" - "+tipo.value;
-
-push(ref(database,"retornos"),{
-folio,
-fecha:new Date().toISOString(),
+datosPendientes={
 operacion:operacion.value,
 operador:operador.value,
 tipo:tipo.value,
-placas:placas.value,
-mercancia:mercancia.value || ""
-});
+placas:placas.value
+};
 
-if(/Android|iPhone|iPad/i.test(navigator.userAgent)){
-window.location.href="mailto:"+destinatarios+
-"?subject="+encodeURIComponent(asuntoCorreo)+
-"&body="+encodeURIComponent(cuerpoCorreo);
+cuerpoCorreo=`Operación: ${operacion.value}
+Operador: ${operador.value}
+
+Tipo:
+${tipo.value}
+
+Placas:
+${placas.value}`;
+
+asuntoCorreo=operacion.value+" - "+tipo.value;
+
+btnConfirmar.disabled=false;
+
+if(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)){
+abrirApp();
 }else{
 modal.style.display="flex";
-window.asuntoCorreo=asuntoCorreo;
-window.cuerpoCorreo=cuerpoCorreo;
 }
 });
 
 window.abrirApp=function(){
-window.location.href="mailto:"+destinatarios+
-"?subject="+encodeURIComponent(window.asuntoCorreo)+
-"&body="+encodeURIComponent(window.cuerpoCorreo);
-cerrarModal();
+window.location.href="mailto:jorge.silva@anam.gob.mx?subject="+encodeURIComponent(asuntoCorreo)+"&body="+encodeURIComponent(cuerpoCorreo);
+modal.style.display="none";
 }
 
 window.abrirWeb=function(){
-window.open(
-"https://outlook.office.com/mail/deeplink/compose?to="+destinatarios+
-"&subject="+encodeURIComponent(window.asuntoCorreo)+
-"&body="+encodeURIComponent(window.cuerpoCorreo),
-"_blank"
-);
-cerrarModal();
+window.open("https://outlook.office.com/mail/deeplink/compose?to=jorge.silva@anam.gob.mx&subject="+encodeURIComponent(asuntoCorreo)+"&body="+encodeURIComponent(cuerpoCorreo),"_blank");
+modal.style.display="none";
 }
 
-window.cerrarModal=function(){modal.style.display="none";}
+window.confirmarEnvio=async function(){
+if(!datosPendientes) return;
+btnConfirmar.disabled=true;
+
+const folio=await generarFolio();
+
+await push(ref(db,"registros/"+fechaActual()),{
+folio:folio,
+...datosPendientes,
+fechaHora:new Date().toLocaleString()
+});
+
+document.getElementById("folio").textContent=folio;
+alert("Envío registrado correctamente ✅\nFolio: "+folio);
+form.reset();
+datosPendientes=null;
+validar();
+}
+
+btnConfirmar.onclick=confirmarEnvio;
+
+document.getElementById("btnVer").onclick=async()=>{
+const snap=await get(ref(db,"registros/"+fechaActual()));
+if(!snap.exists()) return alert("No hay registros hoy");
+let texto="PLACAS DEL DÍA\n\n";
+snap.forEach(c=>texto+=c.val().placas+" - "+c.val().folio+"\n");
+alert(texto);
+};
+
+document.getElementById("btnExcel").onclick=async()=>{
+const snap=await get(ref(db,"registros/"+fechaActual()));
+if(!snap.exists()) return alert("No hay registros hoy");
+let csv="Folio,Operacion,Operador,Tipo,Placas,FechaHora\n";
+snap.forEach(c=>{
+const d=c.val();
+csv+=`${d.folio},${d.operacion},${d.operador},${d.tipo},${d.placas},${d.fechaHora}\n`;
+});
+const blob=new Blob([csv],{type:"text/csv"});
+const url=URL.createObjectURL(blob);
+const a=document.createElement("a");
+a.href=url;
+a.download="Registros_"+fechaActual()+".csv";
+a.click();
+};
 
 validar();
 
