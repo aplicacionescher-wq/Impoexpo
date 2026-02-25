@@ -6,33 +6,75 @@
 <title>Módulos Retornos - ANAM</title>
 
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#004578">
+<meta name="theme-color" content="#611232">
 
 <style>
-body{font-family:Arial;background:#f1f1f1;padding:20px}
-
-.container{
-background:#fff;
-padding:30px;
-max-width:700px;
-margin:auto;
-border-radius:8px;
-border-top:8px solid #004578;
-transition:.3s ease;
+body{
+margin:0;
+font-family:Arial, Helvetica, sans-serif;
+background:#f4f4f4;
 }
 
-h2{color:#004578}
-label{font-weight:bold}
+/* BARRA SUPERIOR GOBIERNO */
+.top-bar{
+background:#611232;
+color:#fff;
+padding:10px 20px;
+font-size:14px;
+font-weight:bold;
+}
+
+/* ENCABEZADO */
+.header{
+background:#ffffff;
+text-align:center;
+padding:20px;
+border-bottom:4px solid #A57F2C;
+}
+
+.logo{
+max-width:280px;
+height:auto;
+}
+
+.title{
+color:#611232;
+font-size:22px;
+font-weight:bold;
+margin-top:10px;
+}
+
+/* CONTENEDOR */
+.container{
+background:#ffffff;
+max-width:750px;
+margin:30px auto;
+padding:30px;
+border-radius:8px;
+box-shadow:0 4px 10px rgba(0,0,0,0.08);
+border-top:8px solid #004578;
+}
+
+h3{
+color:#004578;
+margin-top:0;
+}
+
+label{
+font-weight:bold;
+}
 
 select,input,textarea{
 width:100%;
 padding:10px;
 margin:8px 0 18px;
 border-radius:4px;
-border:1px solid #ccc
+border:1px solid #ccc;
 }
 
-#placas{text-transform:uppercase}
+#placas{
+text-transform:uppercase;
+}
 
 button{
 background:#004578;
@@ -45,9 +87,13 @@ font-size:16px;
 cursor:pointer;
 }
 
-button:disabled{opacity:.5}
+button:disabled{
+opacity:.5;
+}
 
-.hidden{display:none}
+.hidden{
+display:none;
+}
 
 /* MODAL */
 .modal{
@@ -68,14 +114,33 @@ width:90%;
 text-align:center;
 }
 
-.modal-content button{margin-top:10px}
+.modal-content button{
+margin-top:10px;
+}
+
+/* FOOTER */
+.footer{
+text-align:center;
+font-size:12px;
+color:#666;
+margin:30px 0;
+}
 </style>
 </head>
 <body>
 
+<div class="top-bar">
+Gobierno de México | Agencia Nacional de Aduanas de México
+</div>
+
+<div class="header">
+<img src="logo-anam.png" alt="Logo ANAM" class="logo">
+<div class="title">Sistema Institucional de Módulos Retornos</div>
+</div>
+
 <div class="container">
 
-<h2>Módulos Retornos</h2>
+<h3>Generador de Solicitudes</h3>
 
 <p><strong>Folio:</strong> <span id="folio">--</span></p>
 <p><strong>Fecha:</strong> <span id="fechaHora"></span></p>
@@ -115,6 +180,10 @@ text-align:center;
 </form>
 </div>
 
+<div class="footer">
+© 2026 Agencia Nacional de Aduanas de México
+</div>
+
 <!-- MODAL -->
 <div id="selectorModal" class="modal">
 <div class="modal-content">
@@ -133,12 +202,12 @@ navigator.serviceWorker.register('service-worker.js');
 
 const form=document.getElementById("formRetorno");
 const btnEnviar=document.getElementById("btnEnviar");
-const operacion=document.getElementById("operacion");
 const tipo=document.getElementById("tipo");
 const placas=document.getElementById("placas");
 const mercanciaDiv=document.getElementById("mercanciaDiv");
 const mercancia=document.getElementById("mercancia");
 const operador=document.getElementById("operador");
+const operacion=document.getElementById("operacion");
 const modal=document.getElementById("selectorModal");
 
 let cuerpoCorreo="";
@@ -216,19 +285,11 @@ const subject=encodeURIComponent(asuntoCorreo);
 const body=encodeURIComponent(cuerpoCorreo);
 
 if(metodo==="web"){
-window.open(
-"https://outlook.office.com/mail/deeplink/compose?to="+to+
-"&subject="+subject+
-"&body="+body,
-"_blank"
-);
+window.open("https://outlook.office.com/mail/deeplink/compose?to="+to+"&subject="+subject+"&body="+body,"_blank");
 }
 
 if(metodo==="app"){
-window.location.href=
-"mailto:"+to+
-"?subject="+subject+
-"&body="+body;
+window.location.href="mailto:"+to+"?subject="+subject+"&body="+body;
 }
 
 form.reset();
@@ -242,5 +303,6 @@ modal.style.display="none";
 validar();
 
 </script>
+
 </body>
 </html>
