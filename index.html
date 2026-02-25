@@ -25,35 +25,47 @@ font-size:14px;
 font-weight:bold;
 }
 
-/* ENCABEZADO */
-.header{
+/* CONTENEDOR */
+.container{
+position:relative;
 background:#fff;
-text-align:center;
-padding:25px 20px;
-border-bottom:4px solid #A57F2C;
+max-width:750px;
+margin:60px auto 30px;
+padding:40px 30px 30px 30px;
+border-radius:12px;
+box-shadow:0 8px 18px rgba(0,0,0,0.08);
+border-top:8px solid #1E5B4F;
 }
 
-.logo{
-max-width:260px;
+/* LOGO TIPO GOTA */
+.logo-gota{
+position:absolute;
+top:-35px;
+left:50%;
+transform:translateX(-50%);
+width:70px;
+height:70px;
+background:#fff;
+border-radius:50%;
+display:flex;
+justify-content:center;
+align-items:center;
+box-shadow:0 4px 10px rgba(0,0,0,0.15);
+border:3px solid #A57F2C;
+}
+
+.logo-gota img{
+width:55px;
 height:auto;
 }
 
+/* TITULO */
 .title{
+text-align:center;
 color:#611232;
-font-size:22px;
+font-size:20px;
 font-weight:bold;
-margin-top:10px;
-}
-
-/* CONTENEDOR */
-.container{
-background:#fff;
-max-width:750px;
-margin:30px auto;
-padding:30px;
-border-radius:8px;
-box-shadow:0 6px 14px rgba(0,0,0,0.08);
-border-top:8px solid #1E5B4F;
+margin-bottom:20px;
 }
 
 h3{
@@ -68,7 +80,7 @@ select,input,textarea{
 width:100%;
 padding:10px;
 margin:8px 0 18px;
-border-radius:4px;
+border-radius:6px;
 border:1px solid #ccc;
 }
 
@@ -86,7 +98,7 @@ color:#fff;
 padding:12px;
 border:none;
 width:100%;
-border-radius:4px;
+border-radius:6px;
 font-size:16px;
 cursor:pointer;
 font-weight:bold;
@@ -131,12 +143,15 @@ margin:30px 0;
 Gobierno de México | Agencia Nacional de Aduanas de México
 </div>
 
-<div class="header">
-<img src="logo-anam.png" class="logo">
-<div class="title">Sistema Institucional de Módulos Retornos</div>
+<div class="container">
+
+<div class="logo-gota">
+<img src="logo-anam.png">
 </div>
 
-<div class="container">
+<div class="title">
+Sistema Institucional de Módulos Retornos
+</div>
 
 <h3>Generador de Solicitudes</h3>
 
@@ -191,7 +206,6 @@ Gobierno de México | Agencia Nacional de Aduanas de México
 </div>
 
 <script>
-
 if('serviceWorker' in navigator){
 navigator.serviceWorker.register('service-worker.js');
 }
@@ -272,7 +286,6 @@ modal.style.display="flex";
 });
 
 function enviarCorreo(metodo){
-
 cerrarModal();
 
 const to="jorge.silva@anam.gob.mx,vyc.altamira@anam.gob.mx,alejandra.munoz@anam.gob.mx,nayely.chavez@anam.gob.mx,miguel.herrera@anam.gob.mx,abraham.gomez@anam.gob.mx,daniel.santosh@anam.gob.mx,christian.monrreal@anam.gob.mx,monica.becerra@anam.gob.mx,anahi.santiago@anam.gob.mx";
@@ -297,7 +310,6 @@ modal.style.display="none";
 }
 
 validar();
-
 </script>
 
 </body>
