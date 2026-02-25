@@ -7,7 +7,6 @@
 
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#611232">
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <style>
 body{
@@ -29,9 +28,9 @@ text-align:center;
 .container{
 position:relative;
 background:#ffffffee;
-max-width:720px;
-margin:70px auto 20px;
-padding:40px 25px 30px;
+max-width:680px;
+margin:60px auto 20px;
+padding:35px 20px 25px 20px;
 border-radius:14px;
 box-shadow:0 10px 25px rgba(0,0,0,0.1);
 border-top:8px solid #1E5B4F;
@@ -50,30 +49,30 @@ pointer-events:none;
 
 .logo-gota{
 position:absolute;
-top:-40px;
+top:-35px;
 left:50%;
 transform:translateX(-50%);
-width:85px;
-height:85px;
+width:80px;
+height:80px;
 border-radius:50%;
 display:flex;
 justify-content:center;
 align-items:center;
 backdrop-filter:blur(10px);
-background:rgba(255,255,255,0.7);
+background:rgba(255,255,255,0.6);
 box-shadow:0 8px 18px rgba(0,0,0,0.2);
 border:3px solid #A57F2C;
 z-index:2;
 }
 
-.logo-gota img{width:65px;}
+.logo-gota img{width:60px;}
 
 .title{
 text-align:center;
 color:#611232;
 font-size:18px;
 font-weight:bold;
-margin:15px 0;
+margin:10px 0 15px;
 }
 
 h3{
@@ -99,19 +98,17 @@ font-size:14px;
 button{
 background:#1E5B4F;
 color:#fff;
-padding:10px;
+padding:11px;
 border:none;
 width:100%;
 border-radius:6px;
-font-size:14px;
+font-size:15px;
 cursor:pointer;
 font-weight:bold;
-margin-top:6px;
+margin-bottom:8px;
 }
 
-button:hover{
-opacity:0.9;
-}
+button:disabled{background:#98989A}
 
 .hidden{display:none}
 
@@ -122,34 +119,16 @@ inset:0;
 background:rgba(0,0,0,.5);
 justify-content:center;
 align-items:center;
-z-index:1000;
 }
 
 .modal-content{
 background:#fff;
 padding:20px;
 border-radius:8px;
-width:320px;
+max-width:350px;
+width:90%;
 text-align:center;
 border-top:6px solid #611232;
-}
-
-table{
-width:100%;
-border-collapse:collapse;
-margin-top:15px;
-}
-
-th,td{
-border:1px solid #ccc;
-padding:6px;
-font-size:12px;
-text-align:center;
-}
-
-th{
-background:#611232;
-color:#fff;
 }
 
 .footer{
@@ -210,16 +189,15 @@ Solicitud de Retornos Módulos
 <textarea id="mercancia"></textarea>
 </div>
 
-<button type="submit">Generar Correo</button>
-
-<hr>
+<button type="submit" id="btnEnviar" disabled>Generar Correo</button>
 
 <button type="button" onclick="consultarPlacas()">Consultar Placas del Día</button>
-<button type="button" onclick="exportarExcel()">Exportar a Excel</button>
-
-<div id="tablaResultados"></div>
+<button type="button" onclick="exportarExcel()">Exportar Excel del Día</button>
 
 </form>
+
+<div id="resultadoPlacas" class="hidden"></div>
+
 </div>
 
 <div class="footer">
@@ -241,30 +219,41 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getDatabase, ref, push, runTransaction, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
-apiKey: "AIzaSyB_41ENDRUYFLMMsQCXE2Ua8XZjSK5IiOI",
-authDomain: "retornos-anam-altamira.firebaseapp.com",
-databaseURL: "https://retornos-anam-altamira-default-rtdb.firebaseio.com",
-projectId: "retornos-anam-altamira",
-storageBucket: "retornos-anam-altamira.firebasestorage.app",
-messagingSenderId: "975848132753",
-appId: "1:975848132753:web:cdb84e00b5d33006ffef30"
+apiKey: "TU_API_KEY",
+authDomain: "TU_AUTH_DOMAIN",
+databaseURL: "TU_DATABASE_URL",
+projectId: "TU_PROJECT_ID",
+storageBucket: "TU_STORAGE_BUCKET",
+messagingSenderId: "TU_SENDER_ID",
+appId: "TU_APP_ID"
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+const database = getDatabase(app);
 
 const form=document.getElementById("formRetorno");
+const btnEnviar=document.getElementById("btnEnviar");
 const tipo=document.getElementById("tipo");
+const placas=document.getElementById("placas");
 const mercanciaDiv=document.getElementById("mercanciaDiv");
 const mercancia=document.getElementById("mercancia");
-const placas=document.getElementById("placas");
-const operacion=document.getElementById("operacion");
 const operador=document.getElementById("operador");
+const operacion=document.getElementById("operacion");
 const modal=document.getElementById("selectorModal");
 
 const destinatarios="jorge.silva@anam.gob.mx,vyc.altamira@anam.gob.mx,alejandra.munoz@anam.gob.mx,nayely.chavez@anam.gob.mx,miguel.herrera@anam.gob.mx,abraham.gomez@anam.gob.mx,daniel.santosh@anam.gob.mx,christian.monrreal@anam.gob.mx,monica.becerra@anam.gob.mx,anahi.santiago@anam.gob.mx";
 
+function actualizarFecha(){
+document.getElementById("fechaHora").textContent=new Date().toLocaleString();
+}
+setInterval(actualizarFecha,1000);
+actualizarFecha();
+
 placas.addEventListener("input",()=>placas.value=placas.value.toUpperCase());
+
+function validar(){btnEnviar.disabled=!form.checkValidity();}
+form.addEventListener("input",validar);
+form.addEventListener("change",validar);
 
 tipo.addEventListener("change",()=>{
 if(tipo.value==="revision"){
@@ -275,13 +264,8 @@ mercanciaDiv.classList.add("hidden");
 mercancia.required=false;
 mercancia.value="";
 }
+validar();
 });
-
-function actualizarFecha(){
-document.getElementById("fechaHora").textContent=new Date().toLocaleString();
-}
-setInterval(actualizarFecha,1000);
-actualizarFecha();
 
 async function generarFolio(){
 const hoy=new Date();
@@ -289,18 +273,35 @@ const base=hoy.getFullYear().toString()+
 ("0"+(hoy.getMonth()+1)).slice(-2)+
 ("0"+hoy.getDate()).slice(-2);
 
-const contadorRef=ref(db,'contadorFolios/'+base);
-const result=await runTransaction(contadorRef,(c)=>(c||0)+1);
-return "RET-"+base+"-"+result.snapshot.val().toString().padStart(3,"0");
+const contadorRef=ref(database,"folios/"+base);
+
+const resultado=await runTransaction(contadorRef,(actual)=>{
+return (actual||0)+1;
+});
+
+const consecutivo=resultado.snapshot.val();
+return "RET-"+base+"-"+String(consecutivo).padStart(3,'0');
 }
 
-form.addEventListener("submit",async e=>{
+function limpiarFormulario(){
+form.reset();
+operacion.value="EXPORTACION";
+tipo.value="nueva";
+mercanciaDiv.classList.add("hidden");
+mercancia.required=false;
+mercancia.value="";
+document.getElementById("folio").textContent="--";
+validar();
+}
+
+form.addEventListener("submit",async function(e){
 e.preventDefault();
+if(!form.checkValidity()) return;
 
 const folio=await generarFolio();
 document.getElementById("folio").textContent=folio;
 
-const cuerpo=
+const cuerpoCorreo=
 "FOLIO: "+folio+"\n"+
 "Fecha: "+new Date().toLocaleString()+"\n"+
 "Operación: "+operacion.value+"\n"+
@@ -309,66 +310,89 @@ const cuerpo=
 "Placas:\n"+placas.value+
 (mercancia.value? "\n\nMercancía:\n"+mercancia.value:"");
 
-await push(ref(db,"retornos"),{
+const asuntoCorreo=operacion.value+" - "+tipo.options[tipo.selectedIndex].text;
+
+await push(ref(database,"retornos"),{
 folio,
 fecha:new Date().toISOString(),
 operacion:operacion.value,
 operador:operador.value,
 tipo:tipo.value,
 placas:placas.value,
-mercancia:mercancia.value || ""
+mercancia:mercancia.value||""
 });
 
-window.asunto="Solicitud "+folio;
-window.cuerpo=cuerpo;
-
+if(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)){
+window.location.href="mailto:"+destinatarios+
+"?subject="+encodeURIComponent(asuntoCorreo)+
+"&body="+encodeURIComponent(cuerpoCorreo);
+limpiarFormulario();
+}else{
 modal.style.display="flex";
+window.asuntoCorreo=asuntoCorreo;
+window.cuerpoCorreo=cuerpoCorreo;
+}
 });
 
 window.abrirApp=function(){
 window.location.href="mailto:"+destinatarios+
-"?subject="+encodeURIComponent(window.asunto)+
-"&body="+encodeURIComponent(window.cuerpo);
+"?subject="+encodeURIComponent(window.asuntoCorreo)+
+"&body="+encodeURIComponent(window.cuerpoCorreo);
 cerrarModal();
+limpiarFormulario();
 }
 
 window.abrirWeb=function(){
 window.open(
 "https://outlook.office.com/mail/deeplink/compose?to="+destinatarios+
-"&subject="+encodeURIComponent(window.asunto)+
-"&body="+encodeURIComponent(window.cuerpo),
+"&subject="+encodeURIComponent(window.asuntoCorreo)+
+"&body="+encodeURIComponent(window.cuerpoCorreo),
 "_blank"
 );
 cerrarModal();
+limpiarFormulario();
 }
 
-window.cerrarModal=function(){
-modal.style.display="none";
-}
+window.cerrarModal=function(){modal.style.display="none";}
 
 window.consultarPlacas=async function(){
-const snapshot=await get(ref(db,"retornos"));
-let hoy=new Date().toISOString().split("T")[0];
-let html="<table><tr><th>Folio</th><th>Placas</th></tr>";
-snapshot.forEach(doc=>{
-let d=doc.val();
-if(d.fecha.startsWith(hoy)){
-html+="<tr><td>"+d.folio+"</td><td>"+d.placas+"</td></tr>";
+const div=document.getElementById("resultadoPlacas");
+if(!div.classList.contains("hidden")){
+div.classList.add("hidden");
+div.innerHTML="";
+return;
+}
+const snapshot=await get(ref(database,"retornos"));
+let html="<h4>Placas del día:</h4><ul>";
+snapshot.forEach(child=>{
+const data=child.val();
+if(data.fecha.startsWith(new Date().toISOString().slice(0,10))){
+html+="<li>"+data.placas+"</li>";
 }
 });
-html+="</table>";
-document.getElementById("tablaResultados").innerHTML=html;
+html+="</ul>";
+div.innerHTML=html;
+div.classList.remove("hidden");
 }
 
 window.exportarExcel=async function(){
-const snapshot=await get(ref(db,"retornos"));
-let datos=[];
-snapshot.forEach(doc=>datos.push(doc.val()));
-const ws=XLSX.utils.json_to_sheet(datos);
-const wb=XLSX.utils.book_new();
-XLSX.utils.book_append_sheet(wb,ws,"Retornos");
-XLSX.writeFile(wb,"Retornos_ANAM.xlsx");
+const snapshot=await get(ref(database,"retornos"));
+let csv="Folio,Fecha,Operacion,Operador,Tipo,Placas,Mercancia\n";
+snapshot.forEach(child=>{
+const d=child.val();
+if(d.fecha.startsWith(new Date().toISOString().slice(0,10))){
+csv+=`${d.folio},${d.fecha},${d.operacion},${d.operador},${d.tipo},${d.placas},${d.mercancia}\n`;
 }
+});
+const blob=new Blob([csv],{type:"text/csv"});
+const url=URL.createObjectURL(blob);
+const a=document.createElement("a");
+a.href=url;
+a.download="retornos_dia.csv";
+a.click();
+}
+
+validar();
 
 </script>
 
