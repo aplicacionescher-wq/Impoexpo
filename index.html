@@ -10,13 +10,73 @@
 
 <style>
 body{font-family:Arial;background:#f1f1f1;padding:20px}
-.container{background:#fff;padding:30px;max-width:700px;margin:auto;border-radius:8px}
+
+.container{
+background:#fff;
+padding:30px;
+max-width:700px;
+margin:auto;
+border-radius:8px;
+border-top:8px solid #6A0F49;
+transition:.3s ease;
+}
+
+h2{
+color:#6A0F49;
+transition:.3s ease;
+}
+
 label{font-weight:bold}
-select,input,textarea{width:100%;padding:10px;margin:8px 0 18px;border-radius:4px;border:1px solid #ccc}
-button{background:#6A0F49;color:#fff;padding:12px;border:none;width:100%;border-radius:4px;font-size:16px;cursor:pointer}
+
+select,input,textarea{
+width:100%;
+padding:10px;
+margin:8px 0 18px;
+border-radius:4px;
+border:1px solid #ccc
+}
+
+#placas{
+text-transform:uppercase;
+}
+
+button{
+background:#6A0F49;
+color:#fff;
+padding:12px;
+border:none;
+width:100%;
+border-radius:4px;
+font-size:16px;
+cursor:pointer;
+transition:.3s ease;
+}
+
 button:disabled{opacity:.5}
-.install-btn{background:#004578;margin-bottom:15px}
+
+.importacion{
+border-top-color:#6A0F49;
+}
+
+.exportacion{
+border-top-color:#004578;
+}
+
+.exportacion h2{
+color:#004578;
+}
+
+.exportacion button{
+background:#004578;
+}
+
+.install-btn{
+background:#004578;
+margin-bottom:15px;
+}
+
 .hidden{display:none}
+
 </style>
 </head>
 <body>
@@ -67,7 +127,7 @@ button:disabled{opacity:.5}
 
 <script>
 
-/* REGISTRAR SERVICE WORKER */
+/* SERVICE WORKER */
 if ('serviceWorker' in navigator) {
 navigator.serviceWorker.register('sw.js');
 }
@@ -88,25 +148,49 @@ await deferredPrompt.userChoice;
 btnInstalar.classList.add("hidden");
 });
 
-/* FORMULARIO */
+/* VARIABLES */
 const form = document.getElementById("formRetorno");
 const btnEnviar = document.getElementById("btnEnviar");
+const operacion = document.getElementById("operacion");
 const tipo = document.getElementById("tipo");
+const placas = document.getElementById("placas");
 const mercanciaDiv = document.getElementById("mercanciaDiv");
 const mercancia = document.getElementById("mercancia");
+const container = document.querySelector(".container");
 
+/* FECHA */
 function actualizarFecha(){
 document.getElementById("fechaHora").textContent=new Date().toLocaleString();
 }
 actualizarFecha();
 setInterval(actualizarFecha,1000);
 
+/* VALIDACIÓN */
 function validar(){
 btnEnviar.disabled=!form.checkValidity();
 }
 form.addEventListener("input",validar);
 form.addEventListener("change",validar);
 
+/* MAYÚSCULAS EN PLACAS */
+placas.addEventListener("input", function(){
+this.value = this.value.toUpperCase();
+});
+
+/* CAMBIO DE COLOR */
+operacion.addEventListener("change", function(){
+container.classList.remove("importacion","exportacion");
+
+if(this.value==="IMPORTACION"){
+container.classList.add("importacion");
+}
+
+if(this.value==="EXPORTACION"){
+container.classList.add("exportacion");
+}
+});
+
+/* MOSTRAR MERCANCÍA */
 tipo.addEventListener("change",()=>{
 if(tipo.value==="Solicitud de Revisión De Mercancía Sobre-Dimensionada"){
 mercanciaDiv.classList.remove("hidden");
@@ -118,6 +202,7 @@ mercancia.required=false;
 validar();
 });
 
+/* FOLIO */
 function generarFolio(){
 const hoy=new Date();
 const base=hoy.getFullYear().toString()+
@@ -129,7 +214,7 @@ localStorage.setItem("folio_"+base,contador);
 return `RET-${base}-${String(contador).padStart(3,'0')}`;
 }
 
-/* ENVÍO OUTLOOK WEB DIRECTO */
+/* ENVÍO OUTLOOK WEB */
 form.addEventListener("submit",function(e){
 e.preventDefault();
 if(!form.checkValidity()) return;
@@ -152,16 +237,20 @@ if(!mercanciaDiv.classList.contains("hidden")){
 cuerpo+=`\n\nMercancía:\n${mercancia.value}`;
 }
 
-const to="jorge.silva@anam.gob.mx,vyc.altamira@anam.gob.mx,alejandra.munoz@anam.gob.mx,nayely.chavez@anam.gob.mx,miguel.herrera@anam.gob.mx,abraham.gomez@anam.gob.mx,daniel.santosh@anam.gob.mx,christian.monrreal@anam.gob.mx,monica.becerra@anam.gob.mx,anahi.santiago@anam.gob.mx";
+/* DESTINATARIO */
+const to="jorge.silva@anam.gob.mx";
+
+/* COPIAS */
+const cc="vyc.altamira@anam.gob.mx,alejandra.munoz@anam.gob.mx,nayely.chavez@anam.gob.mx,miguel.herrera@anam.gob.mx,abraham.gomez@anam.gob.mx,daniel.santosh@anam.gob.mx,christian.monrreal@anam.gob.mx,monica.becerra@anam.gob.mx,anahi.santiago@anam.gob.mx";
 
 const subject=encodeURIComponent(`${operacion.value} - ${tipo.value}`);
 const body=encodeURIComponent(cuerpo);
 
-/* 🔵 OUTLOOK WEB DIRECTO */
 window.open(`https://outlook.office.com/mail/deeplink/compose?to=${to}&cc=${cc}&subject=${subject}&body=${body}`,"_blank");
 
 form.reset();
 validar();
+
 });
 
 validar();
