@@ -7,33 +7,172 @@
 
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#611232">
-
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <style>
-body{margin:0;font-family:Arial;background:#F4F4F4;color:#161A1D}
-.top-bar{background:#611232;color:#fff;padding:10px;text-align:center;font-weight:bold;font-size:13px}
-.container{background:#fff;max-width:700px;margin:60px auto;padding:30px;border-radius:14px;box-shadow:0 10px 25px rgba(0,0,0,0.1);border-top:8px solid #1E5B4F}
-h3{color:#611232;border-bottom:2px solid #A57F2C;padding-bottom:5px}
-label{font-weight:bold;font-size:14px}
-select,input,textarea{width:100%;padding:8px;margin:6px 0 14px;border-radius:6px;border:1px solid #ccc}
+body{
+margin:0;
+font-family:Arial, Helvetica, sans-serif;
+background:#F4F4F4;
+color:#161A1D;
+}
+
+.top-bar{
+background:#611232;
+color:#fff;
+padding:10px 15px;
+font-size:13px;
+font-weight:bold;
+text-align:center;
+}
+
+.container{
+position:relative;
+background:#ffffffee;
+max-width:720px;
+margin:70px auto 20px;
+padding:40px 25px 30px;
+border-radius:14px;
+box-shadow:0 10px 25px rgba(0,0,0,0.1);
+border-top:8px solid #1E5B4F;
+overflow:hidden;
+}
+
+.container::before{
+content:"";
+position:absolute;
+inset:0;
+background:url("logo-anam.png") center center no-repeat;
+background-size:280px;
+opacity:0.05;
+pointer-events:none;
+}
+
+.logo-gota{
+position:absolute;
+top:-40px;
+left:50%;
+transform:translateX(-50%);
+width:85px;
+height:85px;
+border-radius:50%;
+display:flex;
+justify-content:center;
+align-items:center;
+backdrop-filter:blur(10px);
+background:rgba(255,255,255,0.7);
+box-shadow:0 8px 18px rgba(0,0,0,0.2);
+border:3px solid #A57F2C;
+}
+
+.logo-gota img{width:65px;}
+
+.title{
+text-align:center;
+color:#611232;
+font-size:18px;
+font-weight:bold;
+margin:15px 0 15px;
+}
+
+h3{
+color:#611232;
+border-bottom:2px solid #A57F2C;
+padding-bottom:6px;
+font-size:15px;
+}
+
+label{font-weight:bold;font-size:14px;}
+
+select,input,textarea{
+width:100%;
+padding:9px;
+margin:6px 0 14px;
+border-radius:6px;
+border:1px solid #ccc;
+font-size:14px;
+}
+
 #placas{text-transform:uppercase}
-button{background:#1E5B4F;color:#fff;padding:10px;border:none;width:100%;border-radius:6px;font-weight:bold;cursor:pointer;margin-top:5px}
-button:disabled{background:#999}
+
+button{
+background:#1E5B4F;
+color:#fff;
+padding:10px;
+border:none;
+width:100%;
+border-radius:6px;
+font-size:14px;
+cursor:pointer;
+font-weight:bold;
+margin-top:6px;
+}
+
+button:disabled{background:#98989A}
+
 .hidden{display:none}
-.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);justify-content:center;align-items:center}
-.modal-content{background:#fff;padding:20px;border-radius:8px;text-align:center;width:300px}
-table{width:100%;border-collapse:collapse;margin-top:15px}
-th,td{border:1px solid #ccc;padding:6px;font-size:12px;text-align:center}
-th{background:#611232;color:#fff}
-.footer{text-align:center;font-size:11px;color:#999;margin:20px}
+
+.modal{
+display:none;
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.5);
+justify-content:center;
+align-items:center;
+}
+
+.modal-content{
+background:#fff;
+padding:20px;
+border-radius:8px;
+width:320px;
+text-align:center;
+border-top:6px solid #611232;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:15px;
+}
+
+th,td{
+border:1px solid #ccc;
+padding:6px;
+font-size:12px;
+text-align:center;
+}
+
+th{
+background:#611232;
+color:#fff;
+}
+
+.footer{
+text-align:center;
+font-size:11px;
+color:#98989A;
+margin:20px 0;
+}
 </style>
 </head>
+
 <body>
 
-<div class="top-bar">Gobierno de México | Agencia Nacional de Aduanas de México</div>
+<div class="top-bar">
+Gobierno de México | Agencia Nacional de Aduanas de México
+</div>
 
 <div class="container">
+
+<div class="logo-gota">
+<img src="logo-anam2.png">
+</div>
+
+<div class="title">
+Solicitud de Retornos Módulos
+</div>
+
 <h3>Generador de Solicitudes</h3>
 
 <p><strong>Folio:</strong> <span id="folio">--</span></p>
@@ -43,9 +182,8 @@ th{background:#611232;color:#fff}
 
 <label>Tipo de Operación</label>
 <select id="operacion" required>
-<option value="">Seleccionar</option>
 <option>IMPORTACION</option>
-<option>EXPORTACION</option>
+<option selected>EXPORTACION</option>
 </select>
 
 <label>Operador</label>
@@ -53,25 +191,26 @@ th{background:#611232;color:#fff}
 
 <label>Tipo de Solicitud</label>
 <select id="tipo" required>
-<option value="">Seleccionar</option>
-<option value="nueva">Retorno Nueva Exploración</option>
-<option value="horario">Fuera de Horario</option>
-<option value="revision">Solicitud de Revisión</option>
+<option value="nueva" selected>Retorno Para Nueva Exploración</option>
+<option value="horario">Retorno Fuera De Horario</option>
+<option value="sin_extra">Retorno Sin Servicio Extraordinario</option>
+<option value="carril">Retorno Por Equivocación de Carril</option>
+<option value="revision">Solicitud de Revisión De Mercancía Sobre-Dimensionada</option>
 </select>
 
 <label>Placas</label>
 <textarea id="placas" required></textarea>
 
 <div id="mercanciaDiv" class="hidden">
-<label>Descripción de Mercancía</label>
+<label>Descripción de la Mercancía</label>
 <textarea id="mercancia"></textarea>
 </div>
 
-<button type="submit" id="btnEnviar" disabled>Generar Correo</button>
+<button type="submit" id="btnEnviar">Generar Correo</button>
 
 <hr>
 
-<button type="button" onclick="consultarPlacas()">Consultar Placas</button>
+<button type="button" onclick="consultarPlacas()">Consultar Placas del Día</button>
 <button type="button" onclick="exportarExcel()">Exportar a Excel</button>
 
 <div id="tablaResultados"></div>
@@ -79,47 +218,35 @@ th{background:#611232;color:#fff}
 </form>
 </div>
 
-<div class="footer">© 2026 Agencia Nacional de Aduanas de México</div>
+<div class="footer">
+© 2026 Agencia Nacional de Aduanas de México
+</div>
 
 <div id="selectorModal" class="modal">
 <div class="modal-content">
-<h3>Enviar correo</h3>
-<button onclick="abrirApp()">Outlook App</button>
-<button onclick="abrirWeb()">Outlook Web</button>
+<h3>¿Cómo deseas enviar el correo?</h3>
+<button onclick="abrirApp()">Abrir App Outlook</button>
+<button onclick="abrirWeb()">Abrir Outlook Web</button>
 <button onclick="cerrarModal()">Cancelar</button>
 </div>
 </div>
 
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, push, runTransaction, get, child } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, push, runTransaction, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-const firebaseConfig = {
-apiKey: "TU_API_KEY",
-authDomain: "retornos-anam-altamira.firebaseapp.com",
-databaseURL: "https://retornos-anam-altamira-default-rtdb.firebaseio.com",
-projectId: "retornos-anam-altamira",
-storageBucket: "retornos-anam-altamira.appspot.com",
-messagingSenderId: "975848132753",
-appId: "1:975848132753:web:cdb84e00b5d33006ffef30"
-};
-
+const firebaseConfig = {/* TU CONFIG */};
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 const form=document.getElementById("formRetorno");
-const btnEnviar=document.getElementById("btnEnviar");
 const tipo=document.getElementById("tipo");
 const mercanciaDiv=document.getElementById("mercanciaDiv");
 const mercancia=document.getElementById("mercancia");
 const placas=document.getElementById("placas");
+const modal=document.getElementById("selectorModal");
 
 placas.addEventListener("input",()=>placas.value=placas.value.toUpperCase());
-
-function validar(){btnEnviar.disabled=!form.checkValidity();}
-form.addEventListener("input",validar);
-form.addEventListener("change",validar);
 
 tipo.addEventListener("change",()=>{
 if(tipo.value==="revision"){
@@ -130,7 +257,6 @@ mercanciaDiv.classList.add("hidden");
 mercancia.required=false;
 mercancia.value="";
 }
-validar();
 });
 
 function actualizarFecha(){
@@ -141,62 +267,53 @@ actualizarFecha();
 
 async function generarFolio(){
 const contadorRef=ref(db,'contadorFolios');
-const result=await runTransaction(contadorRef,(current)=> (current||0)+1);
+const result=await runTransaction(contadorRef,(c)=>(c||0)+1);
 return "RET-2026-"+result.snapshot.val().toString().padStart(4,"0");
 }
 
 form.addEventListener("submit",async e=>{
 e.preventDefault();
-if(!form.checkValidity()) return;
-btnEnviar.disabled=true;
-
 const folio=await generarFolio();
 document.getElementById("folio").textContent=folio;
 
 await push(ref(db,"retornos"),{
 folio,
 fecha:new Date().toISOString(),
-operacion:operacion.value,
-operador:operador.value,
-tipo:tipo.value,
-placas:placas.value,
-mercancia:mercancia.value||""
+placas:placas.value
 });
 
 window.asunto="Solicitud "+folio;
 window.cuerpo="Folio: "+folio+"\nPlacas: "+placas.value;
 
-document.getElementById("selectorModal").style.display="flex";
+modal.style.display="flex";
 });
 
 window.abrirApp=function(){
-window.location.href="mailto:correo@anam.gob.mx?subject="+window.asunto+"&body="+window.cuerpo;
+window.location.href="mailto:?subject="+window.asunto+"&body="+window.cuerpo;
 cerrarModal();
 }
-
 window.abrirWeb=function(){
 window.open("https://outlook.office.com/mail/deeplink/compose?subject="+window.asunto+"&body="+window.cuerpo,"_blank");
 cerrarModal();
 }
-
-window.cerrarModal=function(){
-document.getElementById("selectorModal").style.display="none";
-btnEnviar.disabled=false;
-}
+window.cerrarModal=function(){modal.style.display="none";}
 
 window.consultarPlacas=async function(){
-const snapshot=await get(child(ref(db),"retornos"));
-let html="<table><tr><th>Folio</th><th>Fecha</th><th>Placas</th></tr>";
+const snapshot=await get(ref(db,"retornos"));
+let hoy=new Date().toISOString().split("T")[0];
+let html="<table><tr><th>Folio</th><th>Placas</th></tr>";
 snapshot.forEach(doc=>{
 let d=doc.val();
-html+="<tr><td>"+d.folio+"</td><td>"+d.fecha+"</td><td>"+d.placas+"</td></tr>";
+if(d.fecha.startsWith(hoy)){
+html+="<tr><td>"+d.folio+"</td><td>"+d.placas+"</td></tr>";
+}
 });
 html+="</table>";
 document.getElementById("tablaResultados").innerHTML=html;
 }
 
 window.exportarExcel=async function(){
-const snapshot=await get(child(ref(db),"retornos"));
+const snapshot=await get(ref(db,"retornos"));
 let datos=[];
 snapshot.forEach(doc=>datos.push(doc.val()));
 const ws=XLSX.utils.json_to_sheet(datos);
@@ -204,9 +321,7 @@ const wb=XLSX.utils.book_new();
 XLSX.utils.book_append_sheet(wb,ws,"Retornos");
 XLSX.writeFile(wb,"Retornos_ANAM.xlsx");
 }
-
-validar();
-
 </script>
+
 </body>
 </html>
