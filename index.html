@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Formulario Institucional - ANAM</title>
+<title>Módulos Retornos - ANAM</title>
 
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#6A0F49">
+<meta name="theme-color" content="#004578">
 
 <style>
 body{font-family:Arial;background:#f1f1f1;padding:20px}
@@ -17,11 +17,11 @@ padding:30px;
 max-width:700px;
 margin:auto;
 border-radius:8px;
-border-top:8px solid #6A0F49;
+border-top:8px solid #004578;
 transition:.3s ease;
 }
 
-h2{color:#6A0F49;transition:.3s ease}
+h2{color:#004578}
 label{font-weight:bold}
 
 select,input,textarea{
@@ -35,7 +35,7 @@ border:1px solid #ccc
 #placas{text-transform:uppercase}
 
 button{
-background:#6A0F49;
+background:#004578;
 color:#fff;
 padding:12px;
 border:none;
@@ -43,15 +43,9 @@ width:100%;
 border-radius:4px;
 font-size:16px;
 cursor:pointer;
-transition:.3s ease;
 }
 
 button:disabled{opacity:.5}
-
-.importacion{border-top-color:#6A0F49}
-.exportacion{border-top-color:#004578}
-.exportacion h2{color:#004578}
-.exportacion button{background:#004578}
 
 .hidden{display:none}
 
@@ -74,9 +68,7 @@ width:90%;
 text-align:center;
 }
 
-.modal-content button{
-margin-top:10px;
-}
+.modal-content button{margin-top:10px}
 </style>
 </head>
 <body>
@@ -94,7 +86,7 @@ margin-top:10px;
 <select id="operacion" required>
 <option value="">Seleccione</option>
 <option>IMPORTACION</option>
-<option>EXPORTACION</option>
+<option selected>EXPORTACION</option>
 </select>
 
 <label>Operador</label>
@@ -103,7 +95,7 @@ margin-top:10px;
 <label>Tipo de Solicitud</label>
 <select id="tipo" required>
 <option value="">Seleccione</option>
-<option>Retorno Para Nueva Exploración</option>
+<option selected>Retorno Para Nueva Exploración</option>
 <option>Retorno Fuera De Horario</option>
 <option>Retorno Sin Servicio Extraordinario</option>
 <option>Retorno Por Equivocación de Carril</option>
@@ -125,58 +117,49 @@ margin-top:10px;
 
 <!-- MODAL -->
 <div id="selectorModal" class="modal">
-  <div class="modal-content">
-    <h3>¿Cómo deseas enviar el correo?</h3>
-    <button onclick="enviarCorreo('app')">Abrir App de Outlook</button>
-    <button onclick="enviarCorreo('web')">Abrir Outlook Web</button>
-    <button onclick="cerrarModal()">Cancelar</button>
-  </div>
+<div class="modal-content">
+<h3>¿Cómo deseas enviar el correo?</h3>
+<button onclick="enviarCorreo('app')">Abrir App de Outlook</button>
+<button onclick="enviarCorreo('web')">Abrir Outlook Web</button>
+<button onclick="cerrarModal()">Cancelar</button>
+</div>
 </div>
 
 <script>
 
-/* VARIABLES */
-const form = document.getElementById("formRetorno");
-const btnEnviar = document.getElementById("btnEnviar");
-const operacion = document.getElementById("operacion");
-const tipo = document.getElementById("tipo");
-const placas = document.getElementById("placas");
-const mercanciaDiv = document.getElementById("mercanciaDiv");
-const mercancia = document.getElementById("mercancia");
-const operador = document.getElementById("operador");
-const container = document.querySelector(".container");
-const modal = document.getElementById("selectorModal");
+if('serviceWorker' in navigator){
+navigator.serviceWorker.register('service-worker.js');
+}
+
+const form=document.getElementById("formRetorno");
+const btnEnviar=document.getElementById("btnEnviar");
+const operacion=document.getElementById("operacion");
+const tipo=document.getElementById("tipo");
+const placas=document.getElementById("placas");
+const mercanciaDiv=document.getElementById("mercanciaDiv");
+const mercancia=document.getElementById("mercancia");
+const operador=document.getElementById("operador");
+const modal=document.getElementById("selectorModal");
 
 let cuerpoCorreo="";
 let asuntoCorreo="";
 
-/* FECHA */
 function actualizarFecha(){
 document.getElementById("fechaHora").textContent=new Date().toLocaleString();
 }
 actualizarFecha();
 setInterval(actualizarFecha,1000);
 
-/* VALIDACIÓN */
 function validar(){
 btnEnviar.disabled=!form.checkValidity();
 }
 form.addEventListener("input",validar);
 form.addEventListener("change",validar);
 
-/* MAYÚSCULAS */
-placas.addEventListener("input", function(){
+placas.addEventListener("input",function(){
 this.value=this.value.toUpperCase();
 });
 
-/* COLOR SEGÚN OPERACIÓN */
-operacion.addEventListener("change", function(){
-container.classList.remove("importacion","exportacion");
-if(this.value==="IMPORTACION") container.classList.add("importacion");
-if(this.value==="EXPORTACION") container.classList.add("exportacion");
-});
-
-/* MOSTRAR MERCANCÍA */
 tipo.addEventListener("change",()=>{
 if(tipo.value==="Solicitud de Revisión De Mercancía Sobre-Dimensionada"){
 mercanciaDiv.classList.remove("hidden");
@@ -188,7 +171,6 @@ mercancia.required=false;
 validar();
 });
 
-/* FOLIO */
 function generarFolio(){
 const hoy=new Date();
 const base=hoy.getFullYear().toString()+
@@ -200,7 +182,6 @@ localStorage.setItem("folio_"+base,contador);
 return `RET-${base}-${String(contador).padStart(3,'0')}`;
 }
 
-/* SUBMIT */
 form.addEventListener("submit",function(e){
 e.preventDefault();
 if(!form.checkValidity()) return;
@@ -208,65 +189,52 @@ if(!form.checkValidity()) return;
 const folio=generarFolio();
 document.getElementById("folio").textContent=folio;
 
-cuerpoCorreo=`FOLIO: ${folio}
-Fecha: ${document.getElementById("fechaHora").textContent}
-Operación: ${operacion.value}
-Operador: ${operador.value}
-
-Tipo:
-${tipo.value}
-
-Placas:
-${placas.value}`;
+cuerpoCorreo=
+"FOLIO: "+folio+"\n"+
+"Fecha: "+document.getElementById("fechaHora").textContent+"\n"+
+"Operación: "+operacion.value+"\n"+
+"Operador: "+operador.value+"\n\n"+
+"Tipo:\n"+tipo.value+"\n\n"+
+"Placas:\n"+placas.value;
 
 if(!mercanciaDiv.classList.contains("hidden")){
-cuerpoCorreo+=`\n\nMercancía:\n${mercancia.value}`;
+cuerpoCorreo+="\n\nMercancía:\n"+mercancia.value;
 }
 
-asuntoCorreo=`${operacion.value} - ${tipo.value}`;
+asuntoCorreo=operacion.value+" - "+tipo.value;
 
 modal.style.display="flex";
 });
 
-/* ENVIAR CORREO */
 function enviarCorreo(metodo){
 
-const to="jorge.silva@anam.gob.mx","vyc.altamira@anam.gob.mx";
+cerrarModal();
 
-const listaCC=[
-"vyc.altamira@anam.gob.mx",
-"alejandra.munoz@anam.gob.mx",
-"nayely.chavez@anam.gob.mx",
-"miguel.herrera@anam.gob.mx",
-"abraham.gomez@anam.gob.mx",
-"daniel.santosh@anam.gob.mx",
-"christian.monrreal@anam.gob.mx",
-"monica.becerra@anam.gob.mx",
-"anahi.santiago@anam.gob.mx"
-];
+const to="jorge.silva@anam.gob.mx,vyc.altamira@anam.gob.mx,alejandra.munoz@anam.gob.mx,nayely.chavez@anam.gob.mx,miguel.herrera@anam.gob.mx,abraham.gomez@anam.gob.mx,daniel.santosh@anam.gob.mx,christian.monrreal@anam.gob.mx,monica.becerra@anam.gob.mx,anahi.santiago@anam.gob.mx";
 
-const cc = encodeURIComponent(listaCC.join(","));
-const subject = encodeURIComponent(asuntoCorreo);
-const body = encodeURIComponent(cuerpoCorreo);
+const subject=encodeURIComponent(asuntoCorreo);
+const body=encodeURIComponent(cuerpoCorreo);
 
 if(metodo==="web"){
 window.open(
-`https://outlook.office.com/mail/deeplink/compose?to=${to}&cc=${cc}&subject=${subject}&body=${body}`,
+"https://outlook.office.com/mail/deeplink/compose?to="+to+
+"&subject="+subject+
+"&body="+body,
 "_blank"
 );
 }
 
 if(metodo==="app"){
-window.location.href =
-`mailto:${to}?cc=${cc}&subject=${subject}&body=${body}`;
+window.location.href=
+"mailto:"+to+
+"?subject="+subject+
+"&body="+body;
 }
 
-cerrarModal();
 form.reset();
 validar();
 }
 
-/* CERRAR MODAL */
 function cerrarModal(){
 modal.style.display="none";
 }
