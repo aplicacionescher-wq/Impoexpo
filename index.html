@@ -241,7 +241,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getDatabase, ref, push, runTransaction, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
-apiKey: "AIzaSyB_41ENDRUYFLMMsQCXE2Ua8XZjSK5IiOI",
+apiKey: "TU_API_KEY",
 authDomain: "retornos-anam-altamira.firebaseapp.com",
 databaseURL: "https://retornos-anam-altamira-default-rtdb.firebaseio.com",
 projectId: "retornos-anam-altamira",
@@ -262,7 +262,9 @@ const operacion=document.getElementById("operacion");
 const operador=document.getElementById("operador");
 const modal=document.getElementById("selectorModal");
 
-const destinatarios="jorge.silva@anam.gob.mx,vyc.altamira@anam.gob.mx,alejandra.munoz@anam.gob.mx,nayely.chavez@anam.gob.mx,miguel.herrera@anam.gob.mx,abraham.gomez@anam.gob.mx,daniel.santosh@anam.gob.mx,christian.monrreal@anam.gob.mx,monica.becerra@anam.gob.mx,anahi.santiago@anam.gob.mx";
+let tablaVisible=false;
+
+const destinatarios="jorge.silva@anam.gob.mx;vyc.altamira@anam.gob.mx;alejandra.munoz@anam.gob.mx;nayely.chavez@anam.gob.mx;miguel.herrera@anam.gob.mx;abraham.gomez@anam.gob.mx;daniel.santosh@anam.gob.mx;christian.monrreal@anam.gob.mx;monica.becerra@anam.gob.mx;anahi.santiago@anam.gob.mx";
 
 placas.addEventListener("input",()=>placas.value=placas.value.toUpperCase());
 
@@ -297,6 +299,11 @@ return "RET-"+base+"-"+result.snapshot.val().toString().padStart(3,"0");
 form.addEventListener("submit",async e=>{
 e.preventDefault();
 
+if(!form.checkValidity()){
+form.reportValidity();
+return;
+}
+
 const folio=await generarFolio();
 document.getElementById("folio").textContent=folio;
 
@@ -322,7 +329,24 @@ mercancia:mercancia.value || ""
 window.asunto="Solicitud "+folio;
 window.cuerpo=cuerpo;
 
+// Detectar móvil
+const esMovil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+if(esMovil){
+window.location.href="mailto:"+destinatarios+
+"?subject="+encodeURIComponent(window.asunto)+
+"&body="+encodeURIComponent(window.cuerpo);
+}else{
 modal.style.display="flex";
+}
+
+// LIMPIAR FORMULARIO
+form.reset();
+mercanciaDiv.classList.add("hidden");
+mercancia.required=false;
+mercancia.value="";
+document.getElementById("folio").textContent="--";
+
 });
 
 window.abrirApp=function(){
@@ -334,7 +358,7 @@ cerrarModal();
 
 window.abrirWeb=function(){
 window.open(
-"https://outlook.office.com/mail/deeplink/compose?to="+destinatarios+
+"https://outlook.office.com/mail/deeplink/compose?to="+encodeURIComponent(destinatarios)+
 "&subject="+encodeURIComponent(window.asunto)+
 "&body="+encodeURIComponent(window.cuerpo),
 "_blank"
@@ -347,17 +371,31 @@ modal.style.display="none";
 }
 
 window.consultarPlacas=async function(){
+
+const contenedor=document.getElementById("tablaResultados");
+
+if(tablaVisible){
+contenedor.innerHTML="";
+tablaVisible=false;
+return;
+}
+
 const snapshot=await get(ref(db,"retornos"));
 let hoy=new Date().toISOString().split("T")[0];
-let html="<table><tr><th>Folio</th><th>Placas</th></tr>";
+
+let html="<table><tr><th>Operador</th><th>Placas</th></tr>";
+
 snapshot.forEach(doc=>{
 let d=doc.val();
 if(d.fecha.startsWith(hoy)){
-html+="<tr><td>"+d.folio+"</td><td>"+d.placas+"</td></tr>";
+html+="<tr><td>"+d.operador+"</td><td>"+d.placas+"</td></tr>";
 }
 });
+
 html+="</table>";
-document.getElementById("tablaResultados").innerHTML=html;
+
+contenedor.innerHTML=html;
+tablaVisible=true;
 }
 
 window.exportarExcel=async function(){
