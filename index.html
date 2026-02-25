@@ -109,7 +109,12 @@ font-weight:bold;
 margin-top:6px;
 }
 
-button:hover{
+button:disabled{
+background:#999;
+cursor:not-allowed;
+}
+
+button:hover:not(:disabled){
 opacity:0.9;
 }
 
@@ -210,7 +215,7 @@ Solicitud de Retornos Módulos
 <textarea id="mercancia"></textarea>
 </div>
 
-<button type="submit">Generar Correo</button>
+<button type="submit" id="btnGenerar" disabled>Generar Correo</button>
 
 <hr>
 
@@ -261,11 +266,12 @@ const placas=document.getElementById("placas");
 const operacion=document.getElementById("operacion");
 const operador=document.getElementById("operador");
 const modal=document.getElementById("selectorModal");
+const btnGenerar=document.getElementById("btnGenerar");
 const btnConsultar=document.getElementById("btnConsultar");
 
 let tablaVisible=false;
 
-const destinatarios="jorge.silva@anam.gob.mx;vyc.altamira@anam.gob.mx;alejandra.munoz@anam.gob.mx;nayely.chavez@anam.gob.mx;miguel.herrera@anam.gob.mx;abraham.gomez@anam.gob.mx;daniel.santosh@anam.gob.mx;christian.monrreal@anam.gob.mx;monica.becerra@anam.gob.mx;anahi.santiago@anam.gob.mx";
+const destinatarios="jorge.silva@anam.gob.mx,vyc.altamira@anam.gob.mx,alejandra.munoz@anam.gob.mx,nayely.chavez@anam.gob.mx,miguel.herrera@anam.gob.mx,abraham.gomez@anam.gob.mx,daniel.santosh@anam.gob.mx,christian.monrreal@anam.gob.mx,monica.becerra@anam.gob.mx,anahi.santiago@anam.gob.mx";
 
 placas.addEventListener("input",()=>placas.value=placas.value.toUpperCase());
 
@@ -278,7 +284,14 @@ mercanciaDiv.classList.add("hidden");
 mercancia.required=false;
 mercancia.value="";
 }
+validarFormulario();
 });
+
+form.addEventListener("input",validarFormulario);
+
+function validarFormulario(){
+btnGenerar.disabled=!form.checkValidity();
+}
 
 function actualizarFecha(){
 document.getElementById("fechaHora").textContent=new Date().toLocaleString();
@@ -308,14 +321,12 @@ return;
 const folio=await generarFolio();
 document.getElementById("folio").textContent=folio;
 
-const tipoTexto = tipo.options[tipo.selectedIndex].text;
-
 const cuerpo=
 "FOLIO: "+folio+"\n"+
 "Fecha: "+new Date().toLocaleString()+"\n"+
 "Operación: "+operacion.value+"\n"+
 "Operador: "+operador.value+"\n\n"+
-"Tipo:\n"+tipoTexto+"\n\n"+
+"Tipo:\n"+tipo.options[tipo.selectedIndex].text+"\n\n"+
 "Placas:\n"+placas.value+
 (mercancia.value? "\n\nMercancía:\n"+mercancia.value:"");
 
@@ -329,25 +340,39 @@ placas:placas.value,
 mercancia:mercancia.value || ""
 });
 
-window.asunto=operacion.value+" - "+tipoTexto;
+window.asunto="Solicitud "+folio;
 window.cuerpo=cuerpo;
 
-const esMovil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-if(esMovil){
-window.location.href="mailto:"+destinatarios+
-"?subject="+encodeURIComponent(window.asunto)+
-"&body="+encodeURIComponent(window.cuerpo);
-}else{
 modal.style.display="flex";
-}
 
 form.reset();
 mercanciaDiv.classList.add("hidden");
 mercancia.required=false;
 mercancia.value="";
 document.getElementById("folio").textContent="--";
+btnGenerar.disabled=true;
 });
+
+window.abrirApp=function(){
+window.location.href="mailto:"+destinatarios+
+"?subject="+encodeURIComponent(window.asunto)+
+"&body="+encodeURIComponent(window.cuerpo);
+cerrarModal();
+}
+
+window.abrirWeb=function(){
+window.open(
+"https://outlook.office.com/mail/deeplink/compose?to="+destinatarios+
+"&subject="+encodeURIComponent(window.asunto)+
+"&body="+encodeURIComponent(window.cuerpo),
+"_blank"
+);
+cerrarModal();
+}
+
+window.cerrarModal=function(){
+modal.style.display="none";
+}
 
 window.consultarPlacas=async function(){
 
