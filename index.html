@@ -249,29 +249,27 @@ const listaCC=[
 "anahi.santiago@anam.gob.mx"
 ];
 
-const cc=encodeURIComponent(listaCC.join(";"));
-const subject=encodeURIComponent(asuntoCorreo);
-const body=encodeURIComponent(cuerpoCorreo);
+// IMPORTANTE: separados por coma
+const cc = encodeURIComponent(listaCC.join(","));
+const subject = encodeURIComponent(asuntoCorreo);
+const body = encodeURIComponent(cuerpoCorreo);
 
 if(metodo==="web"){
-window.open(`https://outlook.office.com/mail/deeplink/compose?to=${to}&cc=${cc}&subject=${subject}&body=${body}`,"_blank");
+window.open(
+`https://outlook.office.com/mail/deeplink/compose?to=${to}&cc=${cc}&subject=${subject}&body=${body}`,
+"_blank"
+);
 }
 
 if(metodo==="app"){
-window.location.href=`mailto:${to}?cc=${cc}&subject=${subject}&body=${body}`;
+window.location.href =
+`mailto:${to}?cc=${cc}&subject=${subject}&body=${body}`;
 }
 
 cerrarModal();
 form.reset();
 validar();
 }
-
-/* CERRAR MODAL */
-function cerrarModal(){
-modal.style.display="none";
-}
-
-validar();
 
 </script>
 </body>
