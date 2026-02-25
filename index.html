@@ -63,6 +63,7 @@ backdrop-filter:blur(10px);
 background:rgba(255,255,255,0.7);
 box-shadow:0 8px 18px rgba(0,0,0,0.2);
 border:3px solid #A57F2C;
+z-index:2;
 }
 
 .logo-gota img{width:65px;}
@@ -72,7 +73,7 @@ text-align:center;
 color:#611232;
 font-size:18px;
 font-weight:bold;
-margin:15px 0 15px;
+margin:15px 0;
 }
 
 h3{
@@ -108,7 +109,9 @@ font-weight:bold;
 margin-top:6px;
 }
 
-button:disabled{background:#98989A}
+button:hover{
+opacity:0.9;
+}
 
 .hidden{display:none}
 
@@ -119,6 +122,7 @@ inset:0;
 background:rgba(0,0,0,.5);
 justify-content:center;
 align-items:center;
+z-index:1000;
 }
 
 .modal-content{
@@ -206,7 +210,7 @@ Solicitud de Retornos Módulos
 <textarea id="mercancia"></textarea>
 </div>
 
-<button type="submit" id="btnEnviar">Generar Correo</button>
+<button type="submit">Generar Correo</button>
 
 <hr>
 
@@ -232,10 +236,20 @@ Solicitud de Retornos Módulos
 </div>
 
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getDatabase, ref, push, runTransaction, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-const firebaseConfig = {/* TU CONFIG */};
+const firebaseConfig = {
+apiKey: "AIzaSyB_41ENDRUYFLMMsQCXE2Ua8XZjSK5IiOI",
+authDomain: "retornos-anam-altamira.firebaseapp.com",
+databaseURL: "https://retornos-anam-altamira-default-rtdb.firebaseio.com",
+projectId: "retornos-anam-altamira",
+storageBucket: "retornos-anam-altamira.firebasestorage.app",
+messagingSenderId: "975848132753",
+appId: "1:975848132753:web:cdb84e00b5d33006ffef30"
+};
+
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
@@ -244,7 +258,11 @@ const tipo=document.getElementById("tipo");
 const mercanciaDiv=document.getElementById("mercanciaDiv");
 const mercancia=document.getElementById("mercancia");
 const placas=document.getElementById("placas");
+const operacion=document.getElementById("operacion");
+const operador=document.getElementById("operador");
 const modal=document.getElementById("selectorModal");
+
+const destinatarios="jorge.silva@anam.gob.mx,vyc.altamira@anam.gob.mx,alejandra.munoz@anam.gob.mx,nayely.chavez@anam.gob.mx,miguel.herrera@anam.gob.mx,abraham.gomez@anam.gob.mx,daniel.santosh@anam.gob.mx,christian.monrreal@anam.gob.mx,monica.becerra@anam.gob.mx,anahi.santiago@anam.gob.mx";
 
 placas.addEventListener("input",()=>placas.value=placas.value.toUpperCase());
 
@@ -266,37 +284,67 @@ setInterval(actualizarFecha,1000);
 actualizarFecha();
 
 async function generarFolio(){
-const contadorRef=ref(db,'contadorFolios');
+const hoy=new Date();
+const base=hoy.getFullYear().toString()+
+("0"+(hoy.getMonth()+1)).slice(-2)+
+("0"+hoy.getDate()).slice(-2);
+
+const contadorRef=ref(db,'contadorFolios/'+base);
 const result=await runTransaction(contadorRef,(c)=>(c||0)+1);
-return "RET-2026-"+result.snapshot.val().toString().padStart(4,"0");
+return "RET-"+base+"-"+result.snapshot.val().toString().padStart(3,"0");
 }
 
 form.addEventListener("submit",async e=>{
 e.preventDefault();
+
 const folio=await generarFolio();
 document.getElementById("folio").textContent=folio;
+
+const cuerpo=
+"FOLIO: "+folio+"\n"+
+"Fecha: "+new Date().toLocaleString()+"\n"+
+"Operación: "+operacion.value+"\n"+
+"Operador: "+operador.value+"\n\n"+
+"Tipo:\n"+tipo.options[tipo.selectedIndex].text+"\n\n"+
+"Placas:\n"+placas.value+
+(mercancia.value? "\n\nMercancía:\n"+mercancia.value:"");
 
 await push(ref(db,"retornos"),{
 folio,
 fecha:new Date().toISOString(),
-placas:placas.value
+operacion:operacion.value,
+operador:operador.value,
+tipo:tipo.value,
+placas:placas.value,
+mercancia:mercancia.value || ""
 });
 
 window.asunto="Solicitud "+folio;
-window.cuerpo="Folio: "+folio+"\nPlacas: "+placas.value;
+window.cuerpo=cuerpo;
 
 modal.style.display="flex";
 });
 
 window.abrirApp=function(){
-window.location.href="mailto:?subject="+window.asunto+"&body="+window.cuerpo;
+window.location.href="mailto:"+destinatarios+
+"?subject="+encodeURIComponent(window.asunto)+
+"&body="+encodeURIComponent(window.cuerpo);
 cerrarModal();
 }
+
 window.abrirWeb=function(){
-window.open("https://outlook.office.com/mail/deeplink/compose?subject="+window.asunto+"&body="+window.cuerpo,"_blank");
+window.open(
+"https://outlook.office.com/mail/deeplink/compose?to="+destinatarios+
+"&subject="+encodeURIComponent(window.asunto)+
+"&body="+encodeURIComponent(window.cuerpo),
+"_blank"
+);
 cerrarModal();
 }
-window.cerrarModal=function(){modal.style.display="none";}
+
+window.cerrarModal=function(){
+modal.style.display="none";
+}
 
 window.consultarPlacas=async function(){
 const snapshot=await get(ref(db,"retornos"));
@@ -321,6 +369,7 @@ const wb=XLSX.utils.book_new();
 XLSX.utils.book_append_sheet(wb,ws,"Retornos");
 XLSX.writeFile(wb,"Retornos_ANAM.xlsx");
 }
+
 </script>
 
 </body>
