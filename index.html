@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Formulario Institucional - ANAM</title>
+<style>
+body { font-family: 'Segoe UI', Arial, sans-serif; background:#f1f1f1; padding:20px; }
+.container { background:white; padding:30px; max-width:800px; margin:auto;
+border-radius:8px; box-shadow:0 0 20px rgba(0,0,0,0.08); border-top:8px solid #6A0F49; }
+.header { text-align:center; margin-bottom:20px; }
+.header img { max-height:90px; }
+.header h2 { color:#6A0F49; margin-top:10px; }
+.info { background:#f7f7f7; padding:12px; border-left:4px solid #6A0F49; margin-bottom:20px; }
+label { font-weight:600; }
+select, textarea, input { width:100%; padding:10px; margin-top:5px; margin-bottom:18px;
+border-radius:4px; border:1px solid #ccc; }
+button { background:#6A0F49; color:white; padding:12px; border:none; width:100%;
+cursor:pointer; font-size:16px; border-radius:4px; }
+button:disabled { opacity:0.5; cursor:not-allowed; }
+button:hover:enabled { background:#4e0b36; }
+.hidden { display:none; }
+.modal { position:fixed; inset:0; background:rgba(0,0,0,0.5);
+display:flex; justify-content:center; align-items:center; z-index:1000; }
+.modal-box { background:white; padding:30px; border-radius:10px;
+width:90%; max-width:400px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.15); }
+.btn-web { background:#0078D4; }
+.btn-app { background:#6A0F49; }
+.btn-cancelar { background:#999; }
+</style>
+</head>
+<body>
+
+<div class="container">
+<div class="header">
+<h2>Formulario Institucional de Retorno</h2>
+</div>
+
+<div class="info">
+<strong>Folio:</strong> <span id="folio">Se generará al enviar</span><br>
+<strong>Fecha y Hora:</strong> <span id="fechaHora"></span>
+</div>
+
+<form id="formRetorno">
+
+<label>Tipo de Operación:</label>
+<select id="operacion" required>
+<option value="">-- Seleccione --</option>
+<option value="IMPORTACION">Importación</option>
+<option value="EXPORTACION">Exportación</option>
+</select>
+
+<label>Nombre del Operador en Turno:</label>
+<input type="text" id="operador" required>
+
+<label>Seleccione una opción:</label>
+<select id="tipo" required>
+<option value="">-- Seleccione --</option>
+<option>Retorno Para Nueva Exploración</option>
+<option>Retorno Fuera De Horario</option>
+<option>Retorno Sin Servicio Extraordinario</option>
+<option>Retorno Por Equivocación de Carril</option>
+<option>Solicitud de Revisión De Mercancía Sobre-Dimensionada</option>
+</select>
+
+<label>Placa(s) del vehículo:</label>
+<input type="text" id="placas" required>
+
+<div id="mercanciaDiv" class="hidden">
+<label>Tipo de Mercancía / Descripción:</label>
+<textarea id="mercancia"></textarea>
+</div>
+
+<button type="submit" disabled>Generar Correo</button>
+
+</form>
+</div>
+
+<div id="modalEnvio" class="hidden modal">
+<div class="modal-box">
+<h3>Seleccione método de envío</h3>
+<button type="button" class="btn-web" onclick="abrirCorreo('web')">Outlook Web</button>
+<button type="button" class="btn-app" onclick="abrirCorreo('app')">Aplicación Outlook</button>
+<button type="button" class="btn-cancelar" onclick="cerrarModalEnvio()">Cancelar</button>
+</div>
+</div>
+
+<script>
+(function(){
+const destinatarios = ["correo@anam.gob.mx"];
+const form = document.getElementById("formRetorno");
+const submitBtn = form.querySelector("button[type='submit']");
+const operacionEl = document.getElementById("operacion");
+const operadorEl = document.getElementById("operador");
+const tipoEl = document.getElementById("tipo");
+const placasEl = document.getElementById("placas");
+const mercanciaDiv = document.getElementById("mercanciaDiv");
+const mercanciaEl = document.getElementById("mercancia");
+let datosCorreo = {};
+let envioEnProceso = false;
+
+function actualizarFechaHora(){
+document.getElementById("fechaHora").textContent =
+new Date().toLocaleString();
+}
+
+function generarFolioUnico(){
+const hoy = new Date();
+const fechaBase =
+hoy.getFullYear().toString() +
+("0"+(hoy.getMonth()+1)).slice(-2) +
+("0"+hoy.getDate()).slice(-2);
+let contadorGlobal = localStorage.getItem("contador_global");
+contadorGlobal = contadorGlobal ? parseInt(contadorGlobal)+1 : 1;
+localStorage.setItem("contador_global", contadorGlobal);
+return `RET-${fechaBase}-${String(contadorGlobal).padStart(6,'0')}`;
+}
+
+function validarFormulario(){
+const valido =
+operacionEl.value &&
+operadorEl.value &&
+tipoEl.value &&
+placasEl.value &&
+(!mercanciaDiv.classList.contains("hidden") ? mercanciaEl.value : true);
+submitBtn.disabled = !valido;
+}
+
+form.addEventListener("input", validarFormulario);
+form.addEventListener("change", validarFormulario);
+
+tipoEl.addEventListener("change", function(){
+mercanciaDiv.classList.toggle(
+"hidden",
+this.value !== "Solicitud de Revisión De Mercancía Sobre-Dimensionada"
+);
+validarFormulario();
+});
+
+placasEl.addEventListener("input", function(){
+this.value = this.value.toUpperCase();
+});
+
+form.addEventListener("submit", function(e){
+e.preventDefault();
+if(envioEnProceso) return;
+envioEnProceso = true;
+submitBtn.disabled = true;
+actualizarFechaHora();
+const folio = generarFolioUnico();
+document.getElementById("folio").textContent = folio;
+let cuerpo =
+`FOLIO: ${folio}
+Fecha y Hora: ${document.getElementById("fechaHora").textContent}
+Operación: ${operacionEl.value}
+Operador en Turno: ${operadorEl.value}
+
+Tipo de Solicitud:
+${tipoEl.value}
+
+Placa(s):
+${placasEl.value}`;
+
+if(!mercanciaDiv.classList.contains("hidden")){
+cuerpo += `
+
+Tipo de Mercancía:
+${mercanciaEl.value}`;
+}
+
+datosCorreo = {
+asunto: `${operacionEl.value} - ${tipoEl.value}`,
+cuerpo: cuerpo
+};
+
+document.getElementById("modalEnvio").classList.remove("hidden");
+});
+
+window.abrirCorreo = function(modo){
+const to = destinatarios.join(";");
+const subject = encodeURIComponent(datosCorreo.asunto);
+const body = encodeURIComponent(datosCorreo.cuerpo);
+const enlaceWeb =
+`https://outlook.office.com/mail/deeplink/compose?to=${encodeURIComponent(to)}&subject=${subject}&body=${body}`;
+
+if(modo === "web"){
+window.open(enlaceWeb, "_blank");
+} else {
+const enlaceApp =
+`ms-outlook://compose?to=${encodeURIComponent(to)}&subject=${subject}&body=${body}`;
+window.location.href = enlaceApp;
+setTimeout(function(){
+window.open(enlaceWeb, "_blank");
+}, 1000);
+}
+cerrarModalEnvio();
+};
+
+window.cerrarModalEnvio = function(){
+document.getElementById("modalEnvio").classList.add("hidden");
+form.reset();
+envioEnProceso = false;
+validarFormulario();
+};
+
+actualizarFechaHora();
+setInterval(actualizarFechaHora, 1000);
+validarFormulario();
+})();
+</script>
+
+</body>
+</html>
