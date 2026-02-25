@@ -9,22 +9,130 @@
 <meta name="theme-color" content="#611232">
 
 <style>
-body{margin:0;font-family:Arial;background:#F4F4F4;color:#161A1D;}
-.top-bar{background:#611232;color:#fff;padding:10px;text-align:center;font-size:13px;font-weight:bold;}
-.container{position:relative;background:#ffffffee;max-width:680px;margin:60px auto 20px;padding:35px 20px 25px;border-radius:14px;box-shadow:0 10px 25px rgba(0,0,0,0.1);border-top:8px solid #1E5B4F;overflow:hidden;}
-.container::before{content:"";position:absolute;inset:0;background:url("logo-anam.png") center no-repeat;background-size:280px;opacity:0.05;}
-.logo-gota{position:absolute;top:-35px;left:50%;transform:translateX(-50%);width:80px;height:80px;border-radius:50%;display:flex;justify-content:center;align-items:center;background:rgba(255,255,255,0.6);box-shadow:0 8px 18px rgba(0,0,0,0.2);border:3px solid #A57F2C;}
+body{
+margin:0;
+font-family:Arial, Helvetica, sans-serif;
+background:#F4F4F4;
+color:#161A1D;
+}
+
+/* BARRA SUPERIOR */
+.top-bar{
+background:#611232;
+color:#fff;
+padding:10px;
+text-align:center;
+font-size:13px;
+font-weight:bold;
+}
+
+/* CONTENEDOR */
+.container{
+position:relative;
+background:#ffffffee;
+max-width:680px;
+margin:60px auto 20px;
+padding:35px 20px 25px;
+border-radius:14px;
+box-shadow:0 10px 25px rgba(0,0,0,0.1);
+border-top:8px solid #1E5B4F;
+overflow:hidden;
+}
+
+/* MARCA DE AGUA CORREGIDA */
+.container::before{
+content:"";
+position:absolute;
+inset:0;
+background:url("logo-anam.png") center center no-repeat;
+background-size:280px;
+opacity:0.05;
+pointer-events:none; /* 🔥 ESTO EVITA BLOQUEAR EL FORMULARIO */
+}
+
+/* LOGO */
+.logo-gota{
+position:absolute;
+top:-35px;
+left:50%;
+transform:translateX(-50%);
+width:80px;
+height:80px;
+border-radius:50%;
+display:flex;
+justify-content:center;
+align-items:center;
+background:rgba(255,255,255,0.6);
+box-shadow:0 8px 18px rgba(0,0,0,0.2);
+border:3px solid #A57F2C;
+z-index:2;
+}
+
 .logo-gota img{width:60px;}
-.title{text-align:center;color:#611232;font-size:18px;font-weight:bold;margin:10px 0 15px;}
+
+.title{
+text-align:center;
+color:#611232;
+font-size:18px;
+font-weight:bold;
+margin:10px 0 15px;
+}
+
 label{font-weight:bold;font-size:14px;}
-select,input,textarea{width:100%;padding:9px;margin:6px 0 14px;border-radius:6px;border:1px solid #ccc;font-size:14px;}
+
+select,input,textarea{
+width:100%;
+padding:9px;
+margin:6px 0 14px;
+border-radius:6px;
+border:1px solid #ccc;
+font-size:14px;
+}
+
 #placas{text-transform:uppercase}
-button{background:#1E5B4F;color:#fff;padding:11px;border:none;width:100%;border-radius:6px;font-size:15px;cursor:pointer;font-weight:bold;margin-bottom:10px;}
+
+button{
+background:#1E5B4F;
+color:#fff;
+padding:11px;
+border:none;
+width:100%;
+border-radius:6px;
+font-size:15px;
+cursor:pointer;
+font-weight:bold;
+margin-bottom:10px;
+}
+
 button:disabled{background:#98989A}
+
 .hidden{display:none}
-.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);justify-content:center;align-items:center;}
-.modal-content{background:#fff;padding:20px;border-radius:8px;max-width:350px;width:90%;text-align:center;border-top:6px solid #611232;}
-.footer{text-align:center;font-size:11px;color:#98989A;margin:20px 0;}
+
+.modal{
+display:none;
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.5);
+justify-content:center;
+align-items:center;
+}
+
+.modal-content{
+background:#fff;
+padding:20px;
+border-radius:8px;
+max-width:350px;
+width:90%;
+text-align:center;
+border-top:6px solid #611232;
+}
+
+.footer{
+text-align:center;
+font-size:11px;
+color:#98989A;
+margin:20px 0;
+}
 </style>
 </head>
 
@@ -67,11 +175,6 @@ Gobierno de México | Agencia Nacional de Aduanas de México
 <label>Placas</label>
 <textarea id="placas" required></textarea>
 
-<div id="mercanciaDiv" class="hidden">
-<label>Mercancía</label>
-<textarea id="mercancia"></textarea>
-</div>
-
 <button type="submit" id="btnEnviar" disabled>Generar Correo</button>
 <button type="button" id="btnConfirmar" disabled>Confirmar Envío</button>
 <button type="button" id="btnVer">Ver placas del día</button>
@@ -98,7 +201,6 @@ Gobierno de México | Agencia Nacional de Aduanas de México
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, runTransaction, push, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-/* 🔥 TU CONFIG YA INTEGRADA */
 const firebaseConfig = {
   apiKey: "AIzaSyB_41ENDRUYFLMMsQCXE2Ua8XZjSK5IiOI",
   authDomain: "retornos-anam-altamira.firebaseapp.com",
@@ -139,6 +241,7 @@ function validar(){
 btnEnviar.disabled=!form.checkValidity();
 }
 form.addEventListener("input",validar);
+form.addEventListener("change",validar);
 
 placas.addEventListener("input",()=>placas.value=placas.value.toUpperCase());
 
@@ -151,6 +254,7 @@ return `RET-${fecha}-${resultado.snapshot.val().toString().padStart(3,"0")}`;
 
 form.addEventListener("submit",e=>{
 e.preventDefault();
+
 datosPendientes={
 operacion:operacion.value,
 operador:operador.value,
@@ -188,7 +292,11 @@ window.open("https://outlook.office.com/mail/deeplink/compose?to=jorge.silva@ana
 modal.style.display="none";
 }
 
-window.confirmarEnvio=async function(){
+window.cerrarModal=function(){
+modal.style.display="none";
+}
+
+btnConfirmar.onclick=async function(){
 if(!datosPendientes) return;
 btnConfirmar.disabled=true;
 
@@ -205,9 +313,7 @@ alert("Envío registrado correctamente ✅\nFolio: "+folio);
 form.reset();
 datosPendientes=null;
 validar();
-}
-
-btnConfirmar.onclick=confirmarEnvio;
+};
 
 document.getElementById("btnVer").onclick=async()=>{
 const snap=await get(ref(db,"registros/"+fechaActual()));
