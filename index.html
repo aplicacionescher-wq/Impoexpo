@@ -190,7 +190,6 @@ Solicitud de Retornos Módulos
 </div>
 
 <button type="submit" id="btnEnviar" disabled>Generar Correo</button>
-
 <button type="button" onclick="consultarPlacas()">Consultar Placas del Día</button>
 <button type="button" onclick="exportarExcel()">Exportar Excel del Día</button>
 
@@ -219,13 +218,13 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getDatabase, ref, push, runTransaction, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
-apiKey: "TU_API_KEY",
-authDomain: "TU_AUTH_DOMAIN",
-databaseURL: "TU_DATABASE_URL",
-projectId: "TU_PROJECT_ID",
-storageBucket: "TU_STORAGE_BUCKET",
-messagingSenderId: "TU_SENDER_ID",
-appId: "TU_APP_ID"
+  apiKey: "AIzaSyB_41ENDRUYFLMMsQCXE2Ua8XZjSK5IiOI",
+  authDomain: "retornos-anam-altamira.firebaseapp.com",
+  databaseURL: "https://retornos-anam-altamira-default-rtdb.firebaseio.com",
+  projectId: "retornos-anam-altamira",
+  storageBucket: "retornos-anam-altamira.firebasestorage.app",
+  messagingSenderId: "975848132753",
+  appId: "1:975848132753:web:cdb84e00b5d33006ffef30"
 };
 
 const app = initializeApp(firebaseConfig);
