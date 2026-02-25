@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sistema Institucional - ANAM</title>
+<title>Sistema Institucional ANAM</title>
 
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#611232">
@@ -20,74 +20,88 @@ color:#161A1D;
 .top-bar{
 background:#611232;
 color:#fff;
-padding:12px 20px;
-font-size:14px;
+padding:10px 15px;
+font-size:13px;
 font-weight:bold;
+text-align:center;
 }
 
 /* CONTENEDOR */
 .container{
 position:relative;
-background:#fff;
-max-width:750px;
-margin:60px auto 30px;
-padding:40px 30px 30px 30px;
-border-radius:12px;
-box-shadow:0 8px 18px rgba(0,0,0,0.08);
+background:#ffffffee;
+max-width:680px;
+margin:60px auto 20px;
+padding:35px 20px 25px 20px;
+border-radius:14px;
+box-shadow:0 10px 25px rgba(0,0,0,0.1);
 border-top:8px solid #1E5B4F;
+overflow:hidden;
 }
 
-/* LOGO TIPO GOTA */
+/* MARCA DE AGUA */
+.container::before{
+content:"";
+position:absolute;
+inset:0;
+background:url("logo-anam.png") center center no-repeat;
+background-size:280px;
+opacity:0.05;
+pointer-events:none;
+}
+
+/* LOGO CRISTAL */
 .logo-gota{
 position:absolute;
 top:-35px;
 left:50%;
 transform:translateX(-50%);
-width:70px;
-height:70px;
-background:#fff;
+width:80px;
+height:80px;
 border-radius:50%;
 display:flex;
 justify-content:center;
 align-items:center;
-box-shadow:0 4px 10px rgba(0,0,0,0.15);
+backdrop-filter:blur(10px);
+background:rgba(255,255,255,0.6);
+box-shadow:0 8px 18px rgba(0,0,0,0.2);
 border:3px solid #A57F2C;
+z-index:2;
 }
 
 .logo-gota img{
-width:55px;
-height:auto;
+width:60px;
 }
 
 /* TITULO */
 .title{
 text-align:center;
 color:#611232;
-font-size:20px;
+font-size:18px;
 font-weight:bold;
-margin-bottom:20px;
+margin-bottom:15px;
+margin-top:10px;
 }
 
 h3{
 color:#611232;
 border-bottom:2px solid #A57F2C;
-padding-bottom:8px;
+padding-bottom:6px;
+font-size:15px;
 }
 
-label{font-weight:bold}
+label{
+font-weight:bold;
+font-size:14px;
+}
 
 select,input,textarea{
 width:100%;
-padding:10px;
-margin:8px 0 18px;
+padding:9px;
+margin:6px 0 14px;
 border-radius:6px;
 border:1px solid #ccc;
-}
-
-select:focus,input:focus,textarea:focus{
-outline:none;
-border-color:#1E5B4F;
-box-shadow:0 0 4px rgba(30,91,79,0.3);
+font-size:14px;
 }
 
 #placas{text-transform:uppercase}
@@ -95,21 +109,20 @@ box-shadow:0 0 4px rgba(30,91,79,0.3);
 button{
 background:#1E5B4F;
 color:#fff;
-padding:12px;
+padding:11px;
 border:none;
 width:100%;
 border-radius:6px;
-font-size:16px;
+font-size:15px;
 cursor:pointer;
 font-weight:bold;
 }
 
-button:hover{background:#17463D}
 button:disabled{background:#98989A}
 
 .hidden{display:none}
 
-/* MODAL */
+/* MODAL SOLO PC */
 .modal{
 display:none;
 position:fixed;
@@ -121,9 +134,9 @@ align-items:center;
 
 .modal-content{
 background:#fff;
-padding:25px;
+padding:20px;
 border-radius:8px;
-max-width:400px;
+max-width:350px;
 width:90%;
 text-align:center;
 border-top:6px solid #611232;
@@ -131,9 +144,24 @@ border-top:6px solid #611232;
 
 .footer{
 text-align:center;
-font-size:12px;
+font-size:11px;
 color:#98989A;
-margin:30px 0;
+margin:20px 0;
+}
+
+/* RESPONSIVE CELULAR */
+@media(max-width:600px){
+.container{
+margin:40px 10px 20px;
+padding:30px 15px 20px;
+}
+.logo-gota{
+width:65px;
+height:65px;
+}
+.logo-gota img{
+width:45px;
+}
 }
 </style>
 </head>
@@ -195,12 +223,12 @@ Sistema Institucional de Módulos Retornos
 © 2026 Agencia Nacional de Aduanas de México
 </div>
 
-<!-- MODAL -->
+<!-- MODAL SOLO PC -->
 <div id="selectorModal" class="modal">
 <div class="modal-content">
 <h3>¿Cómo deseas enviar el correo?</h3>
-<button onclick="enviarCorreo('app')">Abrir App de Outlook</button>
-<button onclick="enviarCorreo('web')">Abrir Outlook Web</button>
+<button onclick="abrirApp()">Abrir App Outlook</button>
+<button onclick="abrirWeb()">Abrir Outlook Web</button>
 <button onclick="cerrarModal()">Cancelar</button>
 </div>
 </div>
@@ -222,6 +250,10 @@ const modal=document.getElementById("selectorModal");
 
 let cuerpoCorreo="";
 let asuntoCorreo="";
+
+function esMovil(){
+return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
 
 function actualizarFecha(){
 document.getElementById("fechaHora").textContent=new Date().toLocaleString();
@@ -282,27 +314,31 @@ cuerpoCorreo+="\n\nMercancía:\n"+mercancia.value;
 
 asuntoCorreo=operacion.value+" - "+tipo.value;
 
+if(esMovil()){
+abrirApp();
+}else{
 modal.style.display="flex";
+}
 });
 
-function enviarCorreo(metodo){
-cerrarModal();
+const destinatarios="jorge.silva@anam.gob.mx,vyc.altamira@anam.gob.mx,alejandra.munoz@anam.gob.mx,nayely.chavez@anam.gob.mx,miguel.herrera@anam.gob.mx,abraham.gomez@anam.gob.mx,daniel.santosh@anam.gob.mx,christian.monrreal@anam.gob.mx,monica.becerra@anam.gob.mx,anahi.santiago@anam.gob.mx";
 
-const to="jorge.silva@anam.gob.mx,vyc.altamira@anam.gob.mx,alejandra.munoz@anam.gob.mx,nayely.chavez@anam.gob.mx,miguel.herrera@anam.gob.mx,abraham.gomez@anam.gob.mx,daniel.santosh@anam.gob.mx,christian.monrreal@anam.gob.mx,monica.becerra@anam.gob.mx,anahi.santiago@anam.gob.mx";
-
-const subject=encodeURIComponent(asuntoCorreo);
-const body=encodeURIComponent(cuerpoCorreo);
-
-if(metodo==="web"){
-window.open("https://outlook.office.com/mail/deeplink/compose?to="+to+"&subject="+subject+"&body="+body,"_blank");
-}
-
-if(metodo==="app"){
-window.location.href="mailto:"+to+"?subject="+subject+"&body="+body;
-}
-
+function abrirApp(){
+window.location.href="mailto:"+destinatarios+
+"?subject="+encodeURIComponent(asuntoCorreo)+
+"&body="+encodeURIComponent(cuerpoCorreo);
 form.reset();
 validar();
+cerrarModal();
+}
+
+function abrirWeb(){
+window.open("https://outlook.office.com/mail/deeplink/compose?to="+destinatarios+
+"&subject="+encodeURIComponent(asuntoCorreo)+
+"&body="+encodeURIComponent(cuerpoCorreo),"_blank");
+form.reset();
+validar();
+cerrarModal();
 }
 
 function cerrarModal(){
