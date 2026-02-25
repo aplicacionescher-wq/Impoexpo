@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Formulario Institucional - ANAM</title>
 
-<!-- 🔒 ANTI-CACHÉ -->
 <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -15,11 +14,9 @@ body{font-family:Arial;background:#f1f1f1;padding:20px}
 .container{background:#fff;padding:30px;max-width:700px;margin:auto;border-radius:8px}
 label{font-weight:bold}
 select,input,textarea{width:100%;padding:10px;margin:8px 0 18px;border-radius:4px;border:1px solid #ccc}
-button{background:#6A0F49;color:#fff;padding:12px;border:none;width:100%;border-radius:4px;font-size:16px}
-button:disabled{opacity:.5}
+button{background:#6A0F49;color:#fff;padding:12px;border:none;width:100%;border-radius:4px;font-size:16px;cursor:pointer}
+button:disabled{opacity:.5;cursor:not-allowed}
 .hidden{display:none}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;justify-content:center;align-items:center}
-.modal-box{background:#fff;padding:20px;border-radius:8px;width:90%;max-width:400px}
 </style>
 </head>
 <body>
@@ -65,21 +62,10 @@ button:disabled{opacity:.5}
 </form>
 </div>
 
-<!-- MODAL -->
-<div id="modal" class="modal hidden">
-<div class="modal-box">
-<h3>Selecciona método de envío</h3>
-<button id="btnWeb">Outlook Web</button>
-<button id="btnApp" style="margin-top:10px">Aplicación Outlook</button>
-<button id="btnCancelar" style="margin-top:10px;background:#999">Cancelar</button>
-</div>
-</div>
-
 <script>
 
 const form = document.getElementById("formRetorno");
 const btnEnviar = document.getElementById("btnEnviar");
-const modal = document.getElementById("modal");
 
 const operacion = document.getElementById("operacion");
 const operador = document.getElementById("operador");
@@ -88,27 +74,25 @@ const placas = document.getElementById("placas");
 const mercanciaDiv = document.getElementById("mercanciaDiv");
 const mercancia = document.getElementById("mercancia");
 
-let datosCorreo = null;
 let bloqueo = false;
 
-/* 🔒 LIMPIA POSIBLE REDIRECCIÓN PREVIA */
 window.history.replaceState(null, null, window.location.pathname);
 
-/* FECHA */
+/* FECHA EN TIEMPO REAL */
 function actualizarFecha(){
 document.getElementById("fechaHora").textContent = new Date().toLocaleString();
 }
 actualizarFecha();
 setInterval(actualizarFecha,1000);
 
-/* VALIDACIÓN REAL */
+/* VALIDACIÓN */
 function validar(){
 btnEnviar.disabled = !form.checkValidity();
 }
 form.addEventListener("input",validar);
 form.addEventListener("change",validar);
 
-/* MOSTRAR MERCANCÍA */
+/* MOSTRAR CAMPO MERCANCÍA */
 tipo.addEventListener("change",()=>{
 if(tipo.value==="Solicitud de Revisión De Mercancía Sobre-Dimensionada"){
 mercanciaDiv.classList.remove("hidden");
@@ -134,10 +118,10 @@ localStorage.setItem("folio_"+base,contador);
 return `RET-${base}-${String(contador).padStart(3,'0')}`;
 }
 
-/* SUBMIT */
+/* ENVÍO */
 form.addEventListener("submit",function(e){
 e.preventDefault();
-if(!form.checkValidity()||bloqueo)return;
+if(!form.checkValidity() || bloqueo) return;
 
 bloqueo=true;
 btnEnviar.disabled=true;
@@ -160,48 +144,34 @@ if(!mercanciaDiv.classList.contains("hidden")){
 cuerpo+=`\n\nMercancía:\n${mercancia.value}`;
 }
 
-datosCorreo={
-asunto:`${operacion.value} - ${tipo.value}`,
-cuerpo:cuerpo
-};
-
-modal.classList.remove("hidden");
-});
-
-/* BOTONES MODAL */
-document.getElementById("btnWeb").addEventListener("click",()=>{
-abrirCorreo("web");
-});
-document.getElementById("btnApp").addEventListener("click",()=>{
-abrirCorreo("app");
-});
-document.getElementById("btnCancelar").addEventListener("click",resetear);
-
-/* ABRIR CORREO SOLO POR CLICK */
-function abrirCorreo(modo){
-
-if(!datosCorreo)return;
-
+/* DESTINATARIO PRINCIPAL */
 const to="jorge.silva@anam.gob.mx";
-const subject=encodeURIComponent(datosCorreo.asunto);
-const body=encodeURIComponent(datosCorreo.cuerpo);
 
-if(modo==="web"){
-window.open(`https://outlook.office.com/mail/deeplink/compose?to=${to}&subject=${subject}&body=${body}`,"_blank");
-}else{
-window.open(`mailto:${to}?subject=${subject}&body=${body}`,"_blank");
-}
+/* COPIAS */
+const cc="vyc.altamira@anam.gob.mx,\
+alejandra.munoz@anam.gob.mx,\
+nayely.chavez@anam.gob.mx,\
+miguel.herrera@anam.gob.mx,\
+abraham.gomez@anam.gob.mx,\
+daniel.santosh@anam.gob.mx,\
+christian.monrreal@anam.gob.mx,\
+monica.becerra@anam.gob.mx,\
+anahi.santiago@anam.gob.mx";
 
-resetear();
-}
+const subject=encodeURIComponent(`${operacion.value} - ${tipo.value}`);
+const body=encodeURIComponent(cuerpo);
+
+/* ABRE CLIENTE PREDETERMINADO (WEB O APP) */
+window.location.href=`mailto:${to}?cc=${cc}&subject=${subject}&body=${body}`;
 
 /* RESET */
-function resetear(){
-modal.classList.add("hidden");
+setTimeout(()=>{
 form.reset();
 bloqueo=false;
 validar();
-}
+},2000);
+
+});
 
 validar();
 
