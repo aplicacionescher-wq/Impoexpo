@@ -5,9 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Formulario Institucional - ANAM</title>
 
-<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#6A0F49">
 
 <style>
 body{font-family:Arial;background:#f1f1f1;padding:20px}
@@ -15,13 +14,17 @@ body{font-family:Arial;background:#f1f1f1;padding:20px}
 label{font-weight:bold}
 select,input,textarea{width:100%;padding:10px;margin:8px 0 18px;border-radius:4px;border:1px solid #ccc}
 button{background:#6A0F49;color:#fff;padding:12px;border:none;width:100%;border-radius:4px;font-size:16px;cursor:pointer}
-button:disabled{opacity:.5;cursor:not-allowed}
+button:disabled{opacity:.5}
+.install-btn{background:#004578;margin-bottom:15px}
 .hidden{display:none}
 </style>
 </head>
 <body>
 
 <div class="container">
+
+<button id="btnInstalar" class="install-btn hidden">Instalar Aplicación</button>
+
 <h2>Formulario Institucional de Retorno</h2>
 
 <p><strong>Folio:</strong> <span id="folio">--</span></p>
@@ -64,35 +67,46 @@ button:disabled{opacity:.5;cursor:not-allowed}
 
 <script>
 
+/* REGISTRAR SERVICE WORKER */
+if ('serviceWorker' in navigator) {
+navigator.serviceWorker.register('sw.js');
+}
+
+/* BOTÓN INSTALAR */
+let deferredPrompt;
+const btnInstalar = document.getElementById("btnInstalar");
+
+window.addEventListener('beforeinstallprompt', (e) => {
+e.preventDefault();
+deferredPrompt = e;
+btnInstalar.classList.remove("hidden");
+});
+
+btnInstalar.addEventListener('click', async () => {
+deferredPrompt.prompt();
+await deferredPrompt.userChoice;
+btnInstalar.classList.add("hidden");
+});
+
+/* FORMULARIO */
 const form = document.getElementById("formRetorno");
 const btnEnviar = document.getElementById("btnEnviar");
-
-const operacion = document.getElementById("operacion");
-const operador = document.getElementById("operador");
 const tipo = document.getElementById("tipo");
-const placas = document.getElementById("placas");
 const mercanciaDiv = document.getElementById("mercanciaDiv");
 const mercancia = document.getElementById("mercancia");
 
-let bloqueo = false;
-
-window.history.replaceState(null, null, window.location.pathname);
-
-/* FECHA EN TIEMPO REAL */
 function actualizarFecha(){
-document.getElementById("fechaHora").textContent = new Date().toLocaleString();
+document.getElementById("fechaHora").textContent=new Date().toLocaleString();
 }
 actualizarFecha();
 setInterval(actualizarFecha,1000);
 
-/* VALIDACIÓN */
 function validar(){
-btnEnviar.disabled = !form.checkValidity();
+btnEnviar.disabled=!form.checkValidity();
 }
 form.addEventListener("input",validar);
 form.addEventListener("change",validar);
 
-/* MOSTRAR CAMPO MERCANCÍA */
 tipo.addEventListener("change",()=>{
 if(tipo.value==="Solicitud de Revisión De Mercancía Sobre-Dimensionada"){
 mercanciaDiv.classList.remove("hidden");
@@ -104,27 +118,21 @@ mercancia.required=false;
 validar();
 });
 
-/* FOLIO ÚNICO */
 function generarFolio(){
 const hoy=new Date();
 const base=hoy.getFullYear().toString()+
 ("0"+(hoy.getMonth()+1)).slice(-2)+
 ("0"+hoy.getDate()).slice(-2);
-
 let contador=localStorage.getItem("folio_"+base);
 contador=contador?parseInt(contador)+1:1;
 localStorage.setItem("folio_"+base,contador);
-
 return `RET-${base}-${String(contador).padStart(3,'0')}`;
 }
 
-/* ENVÍO */
+/* ENVÍO OUTLOOK WEB DIRECTO */
 form.addEventListener("submit",function(e){
 e.preventDefault();
-if(!form.checkValidity() || bloqueo) return;
-
-bloqueo=true;
-btnEnviar.disabled=true;
+if(!form.checkValidity()) return;
 
 const folio=generarFolio();
 document.getElementById("folio").textContent=folio;
@@ -144,33 +152,17 @@ if(!mercanciaDiv.classList.contains("hidden")){
 cuerpo+=`\n\nMercancía:\n${mercancia.value}`;
 }
 
-/* DESTINATARIO PRINCIPAL */
 const to="jorge.silva@anam.gob.mx";
-
-/* COPIAS */
-const cc="vyc.altamira@anam.gob.mx,\
-alejandra.munoz@anam.gob.mx,\
-nayely.chavez@anam.gob.mx,\
-miguel.herrera@anam.gob.mx,\
-abraham.gomez@anam.gob.mx,\
-daniel.santosh@anam.gob.mx,\
-christian.monrreal@anam.gob.mx,\
-monica.becerra@anam.gob.mx,\
-anahi.santiago@anam.gob.mx";
+const cc="vyc.altamira@anam.gob.mx,alejandra.munoz@anam.gob.mx,nayely.chavez@anam.gob.mx,miguel.herrera@anam.gob.mx,abraham.gomez@anam.gob.mx,daniel.santosh@anam.gob.mx,christian.monrreal@anam.gob.mx,monica.becerra@anam.gob.mx,anahi.santiago@anam.gob.mx";
 
 const subject=encodeURIComponent(`${operacion.value} - ${tipo.value}`);
 const body=encodeURIComponent(cuerpo);
 
-/* ABRE CLIENTE PREDETERMINADO (WEB O APP) */
-window.location.href=`mailto:${to}?cc=${cc}&subject=${subject}&body=${body}`;
+/* 🔵 OUTLOOK WEB DIRECTO */
+window.open(`https://outlook.office.com/mail/deeplink/compose?to=${to}&cc=${cc}&subject=${subject}&body=${body}`,"_blank");
 
-/* RESET */
-setTimeout(()=>{
 form.reset();
-bloqueo=false;
 validar();
-},2000);
-
 });
 
 validar();
