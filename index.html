@@ -19,7 +19,7 @@ color:#161A1D;
 .top-bar{
 background:#611232;
 color:#fff;
-padding:10px 15px;
+padding:10px;
 font-size:13px;
 font-weight:bold;
 text-align:center;
@@ -37,16 +37,6 @@ border-top:8px solid #1E5B4F;
 overflow:hidden;
 }
 
-.container::before{
-content:"";
-position:absolute;
-inset:0;
-background:url("logo-anam.png") center center no-repeat;
-background-size:280px;
-opacity:0.05;
-pointer-events:none;
-}
-
 .logo-gota{
 position:absolute;
 top:-35px;
@@ -58,8 +48,7 @@ border-radius:50%;
 display:flex;
 justify-content:center;
 align-items:center;
-backdrop-filter:blur(10px);
-background:rgba(255,255,255,0.6);
+background:rgba(255,255,255,0.7);
 box-shadow:0 8px 18px rgba(0,0,0,0.2);
 border:3px solid #A57F2C;
 z-index:2;
@@ -105,7 +94,7 @@ border-radius:6px;
 font-size:15px;
 cursor:pointer;
 font-weight:bold;
-margin-bottom:8px;
+margin-top:5px;
 }
 
 button:disabled{background:#98989A}
@@ -165,8 +154,9 @@ Solicitud de Retornos Módulos
 
 <label>Tipo de Operación</label>
 <select id="operacion" required>
+<option value="">Seleccionar</option>
 <option>IMPORTACION</option>
-<option selected>EXPORTACION</option>
+<option>EXPORTACION</option>
 </select>
 
 <label>Operador</label>
@@ -174,7 +164,8 @@ Solicitud de Retornos Módulos
 
 <label>Tipo de Solicitud</label>
 <select id="tipo" required>
-<option value="nueva" selected>Retorno Para Nueva Exploración</option>
+<option value="">Seleccionar</option>
+<option value="nueva">Retorno Para Nueva Exploración</option>
 <option value="horario">Retorno Fuera De Horario</option>
 <option value="sin_extra">Retorno Sin Servicio Extraordinario</option>
 <option value="carril">Retorno Por Equivocación de Carril</option>
@@ -210,14 +201,14 @@ Solicitud de Retornos Módulos
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, push, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
-apiKey: "AIzaSyB_41ENDRUYFLMMsQCXE2Ua8XZjSK5IiOI",
+apiKey: "TU_API_KEY",
 authDomain: "retornos-anam-altamira.firebaseapp.com",
 databaseURL: "https://retornos-anam-altamira-default-rtdb.firebaseio.com",
 projectId: "retornos-anam-altamira",
-storageBucket: "retornos-anam-altamira.firebasestorage.app",
+storageBucket: "retornos-anam-altamira.appspot.com",
 messagingSenderId: "975848132753",
 appId: "1:975848132753:web:cdb84e00b5d33006ffef30"
 };
@@ -245,7 +236,9 @@ actualizarFecha();
 
 placas.addEventListener("input",()=>placas.value=placas.value.toUpperCase());
 
-function validar(){btnEnviar.disabled=!form.checkValidity();}
+function validar(){
+btnEnviar.disabled=!form.checkValidity();
+}
 form.addEventListener("input",validar);
 form.addEventListener("change",validar);
 
@@ -261,19 +254,21 @@ mercancia.value="";
 validar();
 });
 
-function generarFolio(){
-const hoy=new Date();
-const base=hoy.getFullYear().toString()+
-("0"+(hoy.getMonth()+1)).slice(-2)+
-("0"+hoy.getDate()).slice(-2);
-return "RET-"+base+"-"+Date.now().toString().slice(-4);
+async function generarFolioConsecutivo(){
+const contadorRef = ref(database, 'contadorFolios');
+const result = await runTransaction(contadorRef, (current) => {
+return (current || 0) + 1;
+});
+return "RET-2026-" + result.snapshot.val().toString().padStart(4,"0");
 }
 
-form.addEventListener("submit",function(e){
+form.addEventListener("submit", async function(e){
 e.preventDefault();
 if(!form.checkValidity()) return;
 
-const folio=generarFolio();
+btnEnviar.disabled=true;
+
+const folio=await generarFolioConsecutivo();
 document.getElementById("folio").textContent=folio;
 
 const cuerpoCorreo=
@@ -287,7 +282,7 @@ const cuerpoCorreo=
 
 const asuntoCorreo=operacion.value+" - "+tipo.options[tipo.selectedIndex].text;
 
-push(ref(database,"retornos"),{
+await push(ref(database,"retornos"),{
 folio,
 fecha:new Date().toISOString(),
 operacion:operacion.value,
@@ -297,15 +292,10 @@ placas:placas.value,
 mercancia:mercancia.value || ""
 });
 
-if(/Android|iPhone|iPad/i.test(navigator.userAgent)){
-window.location.href="mailto:"+destinatarios+
-"?subject="+encodeURIComponent(asuntoCorreo)+
-"&body="+encodeURIComponent(cuerpoCorreo);
-}else{
-modal.style.display="flex";
 window.asuntoCorreo=asuntoCorreo;
 window.cuerpoCorreo=cuerpoCorreo;
-}
+
+modal.style.display="flex";
 });
 
 window.abrirApp=function(){
@@ -327,6 +317,7 @@ cerrarModal();
 
 window.cerrarModal=function(){
 modal.style.display="none";
+btnEnviar.disabled=false;
 }
 
 validar();
