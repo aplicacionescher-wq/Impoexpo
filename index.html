@@ -22,23 +22,6 @@ body {
     border-top: 8px solid #6A0F49;
 }
 
-.header {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.header h2 {
-    color: #6A0F49;
-    margin-top: 10px;
-}
-
-.info {
-    background: #f7f7f7;
-    padding: 12px;
-    border-left: 4px solid #6A0F49;
-    margin-bottom: 20px;
-}
-
 label { font-weight: 600; }
 
 select, textarea, input {
@@ -66,53 +49,34 @@ button:disabled {
     cursor: not-allowed;
 }
 
-button:hover:enabled {
-    background-color: #4e0b36;
-}
-
 .hidden { display: none; }
-
-/* MODAL */
 .modal {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.5);
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    z-index:1000;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
-
 .modal-box {
-    background:white;
-    padding:30px;
-    border-radius:10px;
-    width:90%;
-    max-width:400px;
-    text-align:center;
-    box-shadow:0 10px 30px rgba(0,0,0,0.15);
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 400px;
 }
-
-.btn-web { background:#0078D4; }
-.btn-app { background:#6A0F49; }
-.btn-cancelar { background:#999; }
 </style>
 </head>
 
 <body>
 
 <div class="container">
-
-<div class="header">
 <h2>Formulario Institucional de Retorno</h2>
-</div>
 
-<div class="info">
-<strong>Folio:</strong> <span id="folio">Se generará al enviar</span><br>
-<strong>Fecha y Hora:</strong> <span id="fechaHora"></span>
-</div>
+<p><strong>Folio:</strong> <span id="folio"></span></p>
+<p><strong>Fecha y Hora:</strong> <span id="fechaHora"></span></p>
 
-<form id="formRetorno">
+<form id="formRetorno" novalidate>
 
 <label>Tipo de Operación:</label>
 <select id="operacion" required>
@@ -121,10 +85,10 @@ button:hover:enabled {
 <option value="EXPORTACION">Exportación</option>
 </select>
 
-<label>Nombre del Operador en Turno:</label>
+<label>Nombre del Operador:</label>
 <input type="text" id="operador" required>
 
-<label>Seleccione una opción:</label>
+<label>Tipo de Solicitud:</label>
 <select id="tipo" required>
 <option value="">-- Seleccione --</option>
 <option>Retorno Para Nueva Exploración</option>
@@ -134,11 +98,11 @@ button:hover:enabled {
 <option>Solicitud de Revisión De Mercancía Sobre-Dimensionada</option>
 </select>
 
-<label>Placa(s) del vehículo:</label>
-<input type="text" id="placas" required>
+<label>Placas:</label>
+<textarea id="placas" required></textarea>
 
 <div id="mercanciaDiv" class="hidden">
-<label>Tipo de Mercancía / Descripción:</label>
+<label>Tipo de Mercancía:</label>
 <textarea id="mercancia"></textarea>
 </div>
 
@@ -148,125 +112,119 @@ button:hover:enabled {
 </div>
 
 <!-- MODAL -->
-<div id="modalEnvio" class="hidden modal">
+<div id="modalEnvio" class="modal hidden">
 <div class="modal-box">
-<h3>Seleccione método de envío</h3>
-<button type="button" class="btn-web" onclick="abrirCorreo('web')">Outlook Web</button>
-<button type="button" class="btn-app" onclick="abrirCorreo('app')">Aplicación Outlook</button>
-<button type="button" class="btn-cancelar" onclick="cerrarModalEnvio()">Cancelar</button>
+<h3>¿Cómo deseas enviar el correo?</h3>
+<button onclick="abrirCorreo('web')">Outlook Web</button>
+<button onclick="abrirCorreo('app')" style="margin-top:10px;">Aplicación Outlook</button>
+<button onclick="cerrarModal()" style="margin-top:10px;background:#999;">Cancelar</button>
 </div>
 </div>
 
 <script>
 (function(){
 
-const destinatarios = ["correo@anam.gob.mx"];
+const destinatarios = [
+"jorge.silva@anam.gob.mx",
+"vyc.altamira@anam.gob.mx"
+];
 
 const form = document.getElementById("formRetorno");
-const submitBtn = form.querySelector("button[type='submit']");
-const operacionEl = document.getElementById("operacion");
-const operadorEl = document.getElementById("operador");
-const tipoEl = document.getElementById("tipo");
-const placasEl = document.getElementById("placas");
+const submitBtn = form.querySelector("button");
+const modal = document.getElementById("modalEnvio");
+
+const operacion = document.getElementById("operacion");
+const operador = document.getElementById("operador");
+const tipo = document.getElementById("tipo");
+const placas = document.getElementById("placas");
 const mercanciaDiv = document.getElementById("mercanciaDiv");
-const mercanciaEl = document.getElementById("mercancia");
+const mercancia = document.getElementById("mercancia");
 
-let datosCorreo = {};
-let envioEnProceso = false;
+let datosCorreo = null;
+let envioBloqueado = false;
 
-/* FECHA */
+/* ===== FOLIO ÚNICO ===== */
+function generarFolio(){
+    const hoy = new Date();
+    const base = hoy.getFullYear().toString() +
+        ("0"+(hoy.getMonth()+1)).slice(-2) +
+        ("0"+hoy.getDate()).slice(-2);
+
+    let contador = localStorage.getItem("contador_"+base);
+    contador = contador ? parseInt(contador)+1 : 1;
+    localStorage.setItem("contador_"+base, contador);
+
+    return `RET-${base}-${String(contador).padStart(3,'0')}`;
+}
+
 function actualizarFechaHora(){
     document.getElementById("fechaHora").textContent =
         new Date().toLocaleString();
 }
 
-/* FOLIO ÚNICO */
-function generarFolioUnico(){
-    const hoy = new Date();
-    const fechaBase =
-        hoy.getFullYear().toString() +
-        ("0"+(hoy.getMonth()+1)).slice(-2) +
-        ("0"+hoy.getDate()).slice(-2);
-
-    let contador = localStorage.getItem("contador_global");
-    contador = contador ? parseInt(contador)+1 : 1;
-    localStorage.setItem("contador_global", contador);
-
-    return `RET-${fechaBase}-${String(contador).padStart(6,'0')}`;
+/* ===== VALIDACIÓN ===== */
+function validar(){
+    submitBtn.disabled = !form.checkValidity();
 }
 
-/* VALIDACIÓN */
-function validarFormulario(){
-    const valido =
-        operacionEl.value &&
-        operadorEl.value &&
-        tipoEl.value &&
-        placasEl.value &&
-        (!mercanciaDiv.classList.contains("hidden") ? mercanciaEl.value : true);
+form.addEventListener("input", validar);
+form.addEventListener("change", validar);
 
-    submitBtn.disabled = !valido;
-}
-
-form.addEventListener("input", validarFormulario);
-form.addEventListener("change", validarFormulario);
-
-tipoEl.addEventListener("change", function(){
-    mercanciaDiv.classList.toggle(
-        "hidden",
-        this.value !== "Solicitud de Revisión De Mercancía Sobre-Dimensionada"
-    );
-    validarFormulario();
+tipo.addEventListener("change", function(){
+    if(this.value === "Solicitud de Revisión De Mercancía Sobre-Dimensionada"){
+        mercanciaDiv.classList.remove("hidden");
+        mercancia.setAttribute("required","required");
+    } else {
+        mercanciaDiv.classList.add("hidden");
+        mercancia.removeAttribute("required");
+    }
+    validar();
 });
 
-placasEl.addEventListener("input", function(){
-    this.value = this.value.toUpperCase();
-});
-
-/* SUBMIT */
+/* ===== SUBMIT ===== */
 form.addEventListener("submit", function(e){
     e.preventDefault();
-
     if(!form.checkValidity()) return;
-    if(envioEnProceso) return;
+    if(envioBloqueado) return;
 
-    envioEnProceso = true;
+    envioBloqueado = true;
     submitBtn.disabled = true;
 
     actualizarFechaHora();
-    const folio = generarFolioUnico();
+    const folio = generarFolio();
     document.getElementById("folio").textContent = folio;
 
     let cuerpo =
 `FOLIO: ${folio}
 Fecha y Hora: ${document.getElementById("fechaHora").textContent}
-Operación: ${operacionEl.value}
-Operador en Turno: ${operadorEl.value}
+Operación: ${operacion.value}
+Operador: ${operador.value}
 
-Tipo de Solicitud:
-${tipoEl.value}
+Tipo:
+${tipo.value}
 
-Placa(s):
-${placasEl.value}`;
+Placas:
+${placas.value}`;
 
     if(!mercanciaDiv.classList.contains("hidden")){
         cuerpo += `
 
-Tipo de Mercancía:
-${mercanciaEl.value}`;
+Mercancía:
+${mercancia.value}`;
     }
 
     datosCorreo = {
-        asunto: `${operacionEl.value} - ${tipoEl.value}`,
+        asunto: `${operacion.value} - ${tipo.value}`,
         cuerpo: cuerpo
     };
 
-    document.getElementById("modalEnvio").classList.remove("hidden");
+    modal.classList.remove("hidden");
 });
 
-/* ABRIR CORREO */
+/* ===== ENVÍO ===== */
 window.abrirCorreo = function(modo){
 
-    if(!datosCorreo.asunto) return;
+    if(!datosCorreo) return;
 
     const to = destinatarios.join(";");
     const subject = encodeURIComponent(datosCorreo.asunto);
@@ -278,7 +236,6 @@ window.abrirCorreo = function(modo){
     if(modo === "web"){
         window.open(enlaceWeb, "_blank");
     } else {
-
         const enlaceApp =
 `ms-outlook://compose?to=${encodeURIComponent(to)}&subject=${subject}&body=${body}`;
 
@@ -289,23 +246,23 @@ window.abrirCorreo = function(modo){
 
         setTimeout(function(){
             window.open(enlaceWeb, "_blank");
-        }, 1200);
+        },1200);
     }
 
-    cerrarModalEnvio();
+    cerrarModal();
 };
 
-window.cerrarModalEnvio = function(){
-    document.getElementById("modalEnvio").classList.add("hidden");
+/* ===== RESET ===== */
+window.cerrarModal = function(){
+    modal.classList.add("hidden");
     form.reset();
-    envioEnProceso = false;
-    validarFormulario();
+    envioBloqueado = false;
+    validar();
 };
 
-/* INIT */
 actualizarFechaHora();
-setInterval(actualizarFechaHora, 1000);
-validarFormulario();
+setInterval(actualizarFechaHora,1000);
+validar();
 
 })();
 </script>
