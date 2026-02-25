@@ -3,213 +3,335 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Generador de Solicitudes - ANAM Altamira</title>
+<title>ANAM - Solicitud de Retornos</title>
 
-<!-- Firebase COMPAT (estable para GitHub Pages) -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#611232">
+
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
 <style>
-body{font-family:Arial;background:#f4f4f4;padding:20px}
-.container{max-width:700px;margin:auto;background:white;padding:20px;border-radius:10px;box-shadow:0 0 10px rgba(0,0,0,0.2)}
-h2{text-align:center;color:#6A0F49}
-label{font-weight:bold}
-input,select,textarea{width:100%;padding:8px;margin-bottom:10px;border-radius:5px;border:1px solid #ccc}
-button{padding:10px;border:none;border-radius:5px;cursor:pointer;margin:5px}
-.btn{background:#6A0F49;color:white}
-.btn-secondary{background:#333;color:white}
-.btn-success{background:green;color:white}
+body{
+margin:0;
+font-family:Arial, Helvetica, sans-serif;
+background:#F4F4F4;
+color:#161A1D;
+}
+
+.top-bar{
+background:#611232;
+color:#fff;
+padding:10px 15px;
+font-size:13px;
+font-weight:bold;
+text-align:center;
+}
+
+.container{
+position:relative;
+background:#ffffffee;
+max-width:680px;
+margin:60px auto 20px;
+padding:35px 20px 25px 20px;
+border-radius:14px;
+box-shadow:0 10px 25px rgba(0,0,0,0.1);
+border-top:8px solid #1E5B4F;
+overflow:hidden;
+}
+
+.container::before{
+content:"";
+position:absolute;
+inset:0;
+background:url("logo-anam.png") center center no-repeat;
+background-size:280px;
+opacity:0.05;
+pointer-events:none;
+}
+
+.logo-gota{
+position:absolute;
+top:-35px;
+left:50%;
+transform:translateX(-50%);
+width:80px;
+height:80px;
+border-radius:50%;
+display:flex;
+justify-content:center;
+align-items:center;
+backdrop-filter:blur(10px);
+background:rgba(255,255,255,0.6);
+box-shadow:0 8px 18px rgba(0,0,0,0.2);
+border:3px solid #A57F2C;
+z-index:2;
+}
+
+.logo-gota img{width:60px;}
+
+.title{
+text-align:center;
+color:#611232;
+font-size:18px;
+font-weight:bold;
+margin:10px 0 15px;
+}
+
+h3{
+color:#611232;
+border-bottom:2px solid #A57F2C;
+padding-bottom:6px;
+font-size:15px;
+}
+
+label{font-weight:bold;font-size:14px;}
+
+select,input,textarea{
+width:100%;
+padding:9px;
+margin:6px 0 14px;
+border-radius:6px;
+border:1px solid #ccc;
+font-size:14px;
+}
+
+#placas{text-transform:uppercase}
+
+button{
+background:#1E5B4F;
+color:#fff;
+padding:11px;
+border:none;
+width:100%;
+border-radius:6px;
+font-size:15px;
+cursor:pointer;
+font-weight:bold;
+margin-top:5px;
+}
+
+button:disabled{background:#98989A}
+
 .hidden{display:none}
-#placasLista{max-height:200px;overflow:auto;border:1px solid #ccc;padding:10px}
+
+.footer{
+text-align:center;
+font-size:11px;
+color:#98989A;
+margin:20px 0;
+}
 </style>
 </head>
 
 <body>
 
-<div class="container">
-<h2>Generador de Solicitudes</h2>
-
-<label>Fecha</label>
-<input type="text" id="fecha" readonly>
-
-<label>Folio</label>
-<input type="text" id="folio" readonly>
-
-<label>Tipo de Operación</label>
-<select id="tipoOperacion">
-<option value="Exportación">Exportación</option>
-<option value="Importación">Importación</option>
-</select>
-
-<label>Tipo de Solicitud</label>
-<select id="tipoSolicitud">
-<option value="Retorno Nueva Exploración">Retorno Nueva Exploración</option>
-<option value="Solicitud de Revisión">Solicitud de Revisión</option>
-<option value="Cambio de Régimen">Cambio de Régimen</option>
-</select>
-
-<label>Operador en turno</label>
-<input type="text" id="operador">
-
-<label>Placas</label>
-<input type="text" id="placas">
-
-<div id="descripcionDiv" class="hidden">
-<label>Descripción de la mercancía</label>
-<textarea id="descripcion"></textarea>
+<div class="top-bar">
+Gobierno de México | Agencia Nacional de Aduanas de México
 </div>
 
-<button class="btn" id="btnGenerar" disabled>Generar Correo</button>
-<button class="btn-secondary" id="btnConsultar">Consultar Placas</button>
-<button class="btn-success" id="btnExcel">Exportar Excel</button>
+<div class="container">
 
-<div id="placasLista" class="hidden"></div>
+<div class="logo-gota">
+<img src="logo-anam2.png">
+</div>
 
+<div class="title">
+Solicitud de Retornos Módulos
+</div>
+
+<h3>Generador de Solicitudes</h3>
+
+<p><strong>Folio:</strong> <span id="folio">--</span></p>
+<p><strong>Fecha:</strong> <span id="fechaHora"></span></p>
+
+<form id="formRetorno">
+
+<label>Tipo de Operación</label>
+<select id="operacion" required>
+<option>IMPORTACION</option>
+<option selected>EXPORTACION</option>
+</select>
+
+<label>Operador</label>
+<input type="text" id="operador" required>
+
+<label>Tipo de Solicitud</label>
+<select id="tipo" required>
+<option value="nueva" selected>Retorno Para Nueva Exploración</option>
+<option value="horario">Retorno Fuera De Horario</option>
+<option value="sin_extra">Retorno Sin Servicio Extraordinario</option>
+<option value="carril">Retorno Por Equivocación de Carril</option>
+<option value="revision">Solicitud de Revisión De Mercancía Sobre-Dimensionada</option>
+</select>
+
+<label>Placas</label>
+<textarea id="placas" required></textarea>
+
+<div id="mercanciaDiv" class="hidden">
+<label>Descripción de la Mercancía</label>
+<textarea id="mercancia"></textarea>
+</div>
+
+<button type="submit" id="btnEnviar" disabled>Generar Correo</button>
+<button type="button" id="btnConsultar">Consultar Placas del Día</button>
+<button type="button" id="btnExcel">Exportar a Excel</button>
+
+<div id="resultadoPlacas" class="hidden"></div>
+
+</form>
+</div>
+
+<div class="footer">
+© 2026 Agencia Nacional de Aduanas de México
 </div>
 
 <script>
 
-// 🔥 TU CONFIGURACIÓN REAL
 const firebaseConfig = {
-  apiKey: "AIzaSyB_41ENDRUYFLMMsQCXE2Ua8XZjSK5IiOI",
-  authDomain: "retornos-anam-altamira.firebaseapp.com",
-  databaseURL: "https://retornos-anam-altamira-default-rtdb.firebaseio.com",
-  projectId: "retornos-anam-altamira",
-  storageBucket: "retornos-anam-altamira.firebasestorage.app",
-  messagingSenderId: "975848132753",
-  appId: "1:975848132753:web:cdb84e00b5d33006ffef30"
+apiKey: "AIzaSyB_41ENDRUYFLMMsQCXE2Ua8XZjSK5IiOI",
+authDomain: "retornos-anam-altamira.firebaseapp.com",
+databaseURL: "https://retornos-anam-altamira-default-rtdb.firebaseio.com",
+projectId: "retornos-anam-altamira",
+storageBucket: "retornos-anam-altamira.firebasestorage.app",
+messagingSenderId: "975848132753",
+appId: "1:975848132753:web:cdb84e00b5d33006ffef30"
 };
 
 firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+const database = firebase.database();
 
-const fechaInput = document.getElementById("fecha");
-const folioInput = document.getElementById("folio");
-const tipoSolicitud = document.getElementById("tipoSolicitud");
-const descripcionDiv = document.getElementById("descripcionDiv");
-const btnGenerar = document.getElementById("btnGenerar");
+const form=document.getElementById("formRetorno");
+const btnEnviar=document.getElementById("btnEnviar");
+const tipo=document.getElementById("tipo");
+const placas=document.getElementById("placas");
+const mercanciaDiv=document.getElementById("mercanciaDiv");
+const mercancia=document.getElementById("mercancia");
+const operador=document.getElementById("operador");
+const operacion=document.getElementById("operacion");
+const resultado=document.getElementById("resultadoPlacas");
 
-function fechaHoy(){
-  const hoy = new Date();
-  const d = String(hoy.getDate()).padStart(2,'0');
-  const m = String(hoy.getMonth()+1).padStart(2,'0');
-  const y = hoy.getFullYear();
-  return `${d}/${m}/${y}`;
+const destinatarios="jorge.silva@anam.gob.mx,vyc.altamira@anam.gob.mx,alejandra.munoz@anam.gob.mx,nayely.chavez@anam.gob.mx,miguel.herrera@anam.gob.mx,abraham.gomez@anam.gob.mx,daniel.santosh@anam.gob.mx,christian.monrreal@anam.gob.mx,monica.becerra@anam.gob.mx,anahi.santiago@anam.gob.mx";
+
+function actualizarFecha(){
+document.getElementById("fechaHora").textContent=new Date().toLocaleString();
 }
+setInterval(actualizarFecha,1000);
+actualizarFecha();
 
-function claveDia(){
-  const hoy = new Date();
-  return `${hoy.getFullYear()}${String(hoy.getMonth()+1).padStart(2,'0')}${String(hoy.getDate()).padStart(2,'0')}`;
+placas.addEventListener("input",()=>placas.value=placas.value.toUpperCase());
+
+function validar(){btnEnviar.disabled=!form.checkValidity();}
+form.addEventListener("input",validar);
+form.addEventListener("change",validar);
+
+tipo.addEventListener("change",()=>{
+if(tipo.value==="revision"){
+mercanciaDiv.classList.remove("hidden");
+mercancia.required=true;
+}else{
+mercanciaDiv.classList.add("hidden");
+mercancia.required=false;
+mercancia.value="";
 }
-
-fechaInput.value = fechaHoy();
-
-function generarFolio(){
-  const refContador = db.ref("folios/"+claveDia());
-  refContador.transaction(current=>{
-    return (current || 0) + 1;
-  },(error,committed,snapshot)=>{
-    if(committed){
-      const numero = String(snapshot.val()).padStart(3,'0');
-      folioInput.value = `${claveDia()}-${numero}`;
-    }
-  });
-}
-
-generarFolio();
-
-function validar(){
-  const operador = document.getElementById("operador").value.trim();
-  const placas = document.getElementById("placas").value.trim();
-  btnGenerar.disabled = !(operador && placas && folioInput.value);
-}
-
-document.querySelectorAll("input,select,textarea").forEach(el=>{
-  el.addEventListener("input",validar);
+validar();
 });
 
-tipoSolicitud.addEventListener("change",()=>{
-  if(tipoSolicitud.value==="Solicitud de Revisión"){
-    descripcionDiv.classList.remove("hidden");
-  }else{
-    descripcionDiv.classList.add("hidden");
-  }
-  validar();
+function obtenerFechaBase(){
+const hoy=new Date();
+return hoy.getFullYear().toString()+
+("0"+(hoy.getMonth()+1)).slice(-2)+
+("0"+hoy.getDate()).slice(-2);
+}
+
+async function generarFolio(){
+const base=obtenerFechaBase();
+const refFolio=database.ref("folios/"+base);
+
+return refFolio.transaction(actual=>{
+return (actual||0)+1;
+}).then(result=>{
+return "RET-"+base+"-"+("000"+result.snapshot.val()).slice(-3);
+});
+}
+
+form.addEventListener("submit",async function(e){
+e.preventDefault();
+if(!form.checkValidity()) return;
+
+const folio=await generarFolio();
+document.getElementById("folio").textContent=folio;
+
+const cuerpo=
+"FOLIO: "+folio+"\n"+
+"Fecha: "+new Date().toLocaleString()+"\n"+
+"Operación: "+operacion.value+"\n"+
+"Operador: "+operador.value+"\n\n"+
+"Tipo:\n"+tipo.options[tipo.selectedIndex].text+"\n\n"+
+"Placas:\n"+placas.value+
+(mercancia.value? "\n\nMercancía:\n"+mercancia.value:"");
+
+const asunto=operacion.value+" - "+tipo.options[tipo.selectedIndex].text;
+
+await database.ref("retornos").push({
+folio,
+fecha:new Date().toISOString(),
+operacion:operacion.value,
+operador:operador.value,
+tipo:tipo.value,
+placas:placas.value,
+mercancia:mercancia.value||""
 });
 
-btnGenerar.addEventListener("click",()=>{
+window.location.href="mailto:"+destinatarios+
+"?subject="+encodeURIComponent(asunto)+
+"&body="+encodeURIComponent(cuerpo);
 
-  const placas = document.getElementById("placas").value.toUpperCase();
-  const operador = document.getElementById("operador").value;
-  const tipoOp = document.getElementById("tipoOperacion").value;
-  const tipoSol = tipoSolicitud.value;
-  const descripcion = document.getElementById("descripcion").value;
-
-  const cuerpo =
-`Folio: ${folioInput.value}
-Fecha: ${fechaInput.value}
-Tipo: ${tipoOp}
-Solicitud: ${tipoSol}
-Operador: ${operador}
-Placas: ${placas}
-Descripción: ${descripcion}`;
-
-  const destinatarios = "abraham.gomez@anam.gob.mx";
-
-  window.location.href =
-    `ms-outlook://compose?to=${destinatarios}&subject=Retorno ${folioInput.value}&body=${encodeURIComponent(cuerpo)}`;
-
-  db.ref("registros/"+claveDia()).push({
-    folio: folioInput.value,
-    fecha: fechaInput.value,
-    tipoOp,
-    tipoSol,
-    operador,
-    placas,
-    descripcion
-  });
-
-  document.getElementById("operador").value="";
-  document.getElementById("placas").value="";
-  document.getElementById("descripcion").value="";
-  descripcionDiv.classList.add("hidden");
-
-  generarFolio();
-  validar();
+form.reset();
+operacion.value="EXPORTACION";
+tipo.value="nueva";
+mercanciaDiv.classList.add("hidden");
+validar();
 });
 
 document.getElementById("btnConsultar").addEventListener("click",()=>{
-  const listaDiv=document.getElementById("placasLista");
-  if(!listaDiv.classList.contains("hidden")){
-    listaDiv.classList.add("hidden");
-    listaDiv.innerHTML="";
-    return;
-  }
-  db.ref("registros/"+claveDia()).once("value",snap=>{
-    listaDiv.innerHTML="";
-    snap.forEach(child=>{
-      listaDiv.innerHTML+=`<div>${child.val().placas} - ${child.val().folio}</div>`;
-    });
-    listaDiv.classList.remove("hidden");
-  });
+if(!resultado.classList.contains("hidden")){
+resultado.classList.add("hidden");
+resultado.innerHTML="";
+return;
+}
+const base=obtenerFechaBase();
+database.ref("retornos").once("value",snap=>{
+let html="<h4>Placas del Día</h4>";
+snap.forEach(child=>{
+if(child.val().folio.includes(base)){
+html+="<p>"+child.val().placas+"</p>";
+}
+});
+resultado.innerHTML=html;
+resultado.classList.remove("hidden");
+});
 });
 
 document.getElementById("btnExcel").addEventListener("click",()=>{
-  db.ref("registros/"+claveDia()).once("value",snap=>{
-    let csv="Folio,Fecha,Tipo,Operador,Placas\n";
-    snap.forEach(child=>{
-      const r=child.val();
-      csv+=`${r.folio},${r.fecha},${r.tipoOp},${r.operador},${r.placas}\n`;
-    });
-    const blob=new Blob([csv],{type:"text/csv"});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement("a");
-    a.href=url;
-    a.download="retornos_"+claveDia()+".csv";
-    a.click();
-  });
+database.ref("retornos").once("value",snap=>{
+let csv="Folio,Fecha,Operacion,Operador,Tipo,Placas,Mercancia\n";
+snap.forEach(child=>{
+const d=child.val();
+csv+=`${d.folio},${d.fecha},${d.operacion},${d.operador},${d.tipo},${d.placas},${d.mercancia}\n`;
+});
+const blob=new Blob([csv],{type:"text/csv"});
+const url=URL.createObjectURL(blob);
+const a=document.createElement("a");
+a.href=url;
+a.download="retornos.csv";
+a.click();
+});
 });
 
+validar();
+
 </script>
+
 </body>
 </html>
