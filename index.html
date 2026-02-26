@@ -278,23 +278,9 @@ btnGenerar.disabled = !form.checkValidity();
 }
 
 form.addEventListener("input", validarFormulario);
-tipo.addEventListener("change", validarFormulario);
-operacion.addEventListener("change", validarFormulario);
 
 placas.addEventListener("input",()=>{
 placas.value=placas.value.toUpperCase();
-validarFormulario();
-});
-
-tipo.addEventListener("change",()=>{
-if(tipo.value==="revision"){
-mercanciaDiv.classList.remove("hidden");
-mercancia.required=true;
-}else{
-mercanciaDiv.classList.add("hidden");
-mercancia.required=false;
-mercancia.value="";
-}
 validarFormulario();
 });
 
@@ -324,7 +310,6 @@ return;
 }
 
 const folio=await generarFolio();
-document.getElementById("folio").textContent=folio;
 
 const cuerpo=
 "FOLIO: "+folio+"\n"+
@@ -332,8 +317,7 @@ const cuerpo=
 "Operación: "+operacion.value+"\n"+
 "Operador: "+operador.value+"\n\n"+
 "Tipo:\n"+tipo.options[tipo.selectedIndex].text+"\n\n"+
-"Placas:\n"+placas.value+
-(mercancia.value? "\n\nMercancía:\n"+mercancia.value:"");
+"Placas:\n"+placas.value;
 
 await push(ref(db,"retornos"),{
 folio,
@@ -341,55 +325,21 @@ fecha:new Date().toISOString(),
 operacion:operacion.value,
 operador:operador.value,
 tipo:tipo.value,
-placas:placas.value,
-mercancia:mercancia.value || ""
+placas:placas.value
 });
 
 window.asunto = operacion.value + " - " +
-tipo.options[tipo.selectedIndex].text +
-" - " + folio;
+tipo.options[tipo.selectedIndex].text;
 
 window.cuerpo=cuerpo;
 
-const esMovil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-if(esMovil){
 window.location.href="mailto:"+destinatarios+
 "?subject="+encodeURIComponent(window.asunto)+
 "&body="+encodeURIComponent(window.cuerpo);
-}else{
-modal.style.display="flex";
-}
 
 form.reset();
-mercanciaDiv.classList.add("hidden");
-mercancia.required=false;
-mercancia.value="";
 btnGenerar.disabled=true;
-document.getElementById("folio").textContent="--";
-
 });
-
-window.abrirApp=function(){
-window.location.href="mailto:"+destinatarios+
-"?subject="+encodeURIComponent(window.asunto)+
-"&body="+encodeURIComponent(window.cuerpo);
-cerrarModal();
-}
-
-window.abrirWeb=function(){
-window.open(
-"https://outlook.office.com/mail/deeplink/compose?to="+encodeURIComponent(destinatarios)+
-"&subject="+encodeURIComponent(window.asunto)+
-"&body="+encodeURIComponent(window.cuerpo),
-"_blank"
-);
-cerrarModal();
-}
-
-window.cerrarModal=function(){
-modal.style.display="none";
-}
 
 window.consultarPlacas=async function(){
 const contenedor=document.getElementById("tablaResultados");
@@ -403,12 +353,12 @@ return;
 const snapshot=await get(ref(db,"retornos"));
 let hoy=new Date().toISOString().split("T")[0];
 
-let html="<table><tr><th>Operador</th><th>Placas</th></tr>";
+let html="<table><tr><th>Operador</th><th>Operación</th><th>Placas</th></tr>";
 
 snapshot.forEach(doc=>{
 let d=doc.val();
 if(d.fecha.startsWith(hoy)){
-html+="<tr><td>"+d.operador+"</td><td>"+d.placas+"</td></tr>";
+html+="<tr><td>"+d.operador+"</td><td>"+d.operacion+"</td><td>"+d.placas+"</td></tr>";
 }
 });
 
@@ -416,16 +366,6 @@ html+="</table>";
 
 contenedor.innerHTML=html;
 tablaVisible=true;
-}
-
-window.exportarExcel=async function(){
-const snapshot=await get(ref(db,"retornos"));
-let datos=[];
-snapshot.forEach(doc=>datos.push(doc.val()));
-const ws=XLSX.utils.json_to_sheet(datos);
-const wb=XLSX.utils.book_new();
-XLSX.utils.book_append_sheet(wb,ws,"Retornos");
-XLSX.writeFile(wb,"Retornos_ANAM.xlsx");
 }
 
 </script>
