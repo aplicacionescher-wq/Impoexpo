@@ -338,16 +338,18 @@ const cuerpo=
 await push(ref(db,"retornos"),{
 folio,
 fecha:new Date().toISOString(),
+  
 operacion:operacion.value,
 operador:operador.value,
+  
 tipo:tipo.value,
 placas:placas.value,
 mercancia:mercancia.value || ""
 });
 
 window.asunto = operacion.value + " - " +
-tipo.options[tipo.selectedIndex].text +
-" - " + folio;
+tipo.options[tipo.selectedIndex].text;
+
 
 window.cuerpo=cuerpo;
 
