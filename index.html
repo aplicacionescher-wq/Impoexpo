@@ -191,13 +191,13 @@ Solicitud de Retornos Módulos
 <form id="formRetorno">
 
 <label>Tipo de Operación</label>
-<select id="operacion" required></p>
+<select id="operacion" required>
 <option>IMPORTACION</option>
 <option selected>EXPORTACION</option>
 </select>
 
 <label>Operador</label>
-<input type="text" id="operador" required></p>
+<input type="text" id="operador" required>
 
 <label>Tipo de Solicitud</label>
 <select id="tipo" required>
@@ -326,22 +326,74 @@ return;
 const folio=await generarFolio();
 document.getElementById("folio").textContent=folio;
 
-const cuerpo=
-"FOLIO: "+folio+"\n"+
-"Fecha: "+new Date().toLocaleString()+"\n"+
-"Operación: "+operacion.value+"\n"+
-"Operador: "+operador.value+"\n\n"+
-"Tipo:\n"+tipo.options[tipo.selectedIndex].text+"\n\n"+
-"Placas:\n"+placas.value+
-(mercancia.value? "\n\nMercancía:\n"+mercancia.value:"");
+/* =======================
+   CUERPO MODIFICADO
+======================= */
+
+const hora = new Date().getHours();
+let saludo = "";
+
+if (hora < 12) {
+  saludo = "Buenos días";
+} else if (hora < 19) {
+  saludo = "Buenas tardes";
+} else {
+  saludo = "Buenas noches";
+}
+
+let cuerpo = saludo + ",\n\n";
+
+if (tipo.value === "revision") {
+
+  cuerpo += 
+  "Solicito su valioso apoyo para la apertura del carril de excesos de exportación, para el ingreso de excesos de dimensiones y la revisión con sensor canino.\n\n" +
+  "PLACAS:\n" + placas.value + "\n\n" +
+  "MERCANCÍA:\n" + mercancia.value + "\n\n" +
+  "Favor de dar parte al personal del módulo cuando la unidad sea revisada y contestar correo electrónico una vez efectuada la revisión canina.\n\n" +
+  "Gracias.\n\n" +
+  "Saludos cordiales,\n" +
+  operador.value + "\n" +
+  "Módulo de Operaciones\n" +
+  "ANAM Altamira";
+
+} else {
+
+  if (operacion.value === "EXPORTACION") {
+
+    cuerpo +=
+    "El presente correo es para solicitar la apertura del carril de excesos a la exportación para el retorno al vehículo con las placas siguientes:\n\n" +
+    placas.value + "\n\n" +
+    "Tipo de retorno:\n" +
+    tipo.options[tipo.selectedIndex].text + "\n\n" +
+    "Gracias.\n\n" +
+    "Saludos cordiales,\n" +
+    operador.value + "\n" +
+    "Módulo de Operaciones\n" +
+    "ANAM Altamira";
+
+  } else {
+
+    cuerpo +=
+    "El presente correo es para solicitar la apertura del carril de excesos a la importación para el retorno al vehículo con las placas siguientes:\n\n" +
+    placas.value + "\n\n" +
+    "Tipo de retorno:\n" +
+    tipo.options[tipo.selectedIndex].text + "\n\n" +
+    "Gracias.\n\n" +
+    "Saludos cordiales,\n" +
+    operador.value + "\n" +
+    "Módulo de Operaciones\n" +
+    "ANAM Altamira";
+  }
+
+}
+
+/* ======================= */
 
 await push(ref(db,"retornos"),{
 folio,
 fecha:new Date().toISOString(),
-  
 operacion:operacion.value,
 operador:operador.value,
-  
 tipo:tipo.value,
 placas:placas.value,
 mercancia:mercancia.value || ""
@@ -349,7 +401,6 @@ mercancia:mercancia.value || ""
 
 window.asunto = operacion.value + " - " +
 tipo.options[tipo.selectedIndex].text;
-
 
 window.cuerpo=cuerpo;
 
