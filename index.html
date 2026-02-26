@@ -113,6 +113,12 @@ button:hover{
 opacity:0.9;
 }
 
+button:disabled{
+background:#999;
+cursor:not-allowed;
+opacity:0.6;
+}
+
 .hidden{display:none}
 
 .modal{
@@ -210,7 +216,7 @@ Solicitud de Retornos Módulos
 <textarea id="mercancia"></textarea>
 </div>
 
-<button type="submit">Generar Correo</button>
+<button type="submit" id="btnGenerar" disabled>Generar Correo</button>
 
 <hr>
 
@@ -261,12 +267,24 @@ const placas=document.getElementById("placas");
 const operacion=document.getElementById("operacion");
 const operador=document.getElementById("operador");
 const modal=document.getElementById("selectorModal");
+const btnGenerar=document.getElementById("btnGenerar");
 
 let tablaVisible=false;
 
 const destinatarios="jorge.silva@anam.gob.mx;vyc.altamira@anam.gob.mx;alejandra.munoz@anam.gob.mx;nayely.chavez@anam.gob.mx;miguel.herrera@anam.gob.mx;abraham.gomez@anam.gob.mx;daniel.santosh@anam.gob.mx;christian.monrreal@anam.gob.mx;monica.becerra@anam.gob.mx;anahi.santiago@anam.gob.mx";
 
-placas.addEventListener("input",()=>placas.value=placas.value.toUpperCase());
+function validarFormulario(){
+btnGenerar.disabled = !form.checkValidity();
+}
+
+form.addEventListener("input", validarFormulario);
+tipo.addEventListener("change", validarFormulario);
+operacion.addEventListener("change", validarFormulario);
+
+placas.addEventListener("input",()=>{
+placas.value=placas.value.toUpperCase();
+validarFormulario();
+});
 
 tipo.addEventListener("change",()=>{
 if(tipo.value==="revision"){
@@ -277,6 +295,7 @@ mercanciaDiv.classList.add("hidden");
 mercancia.required=false;
 mercancia.value="";
 }
+validarFormulario();
 });
 
 function actualizarFecha(){
@@ -326,10 +345,12 @@ placas:placas.value,
 mercancia:mercancia.value || ""
 });
 
-window.asunto="Solicitud "+folio;
+window.asunto = operacion.value + " - " +
+tipo.options[tipo.selectedIndex].text +
+" - " + folio;
+
 window.cuerpo=cuerpo;
 
-// Detectar móvil
 const esMovil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 if(esMovil){
@@ -340,11 +361,11 @@ window.location.href="mailto:"+destinatarios+
 modal.style.display="flex";
 }
 
-// LIMPIAR FORMULARIO
 form.reset();
 mercanciaDiv.classList.add("hidden");
 mercancia.required=false;
 mercancia.value="";
+btnGenerar.disabled=true;
 document.getElementById("folio").textContent="--";
 
 });
@@ -371,7 +392,6 @@ modal.style.display="none";
 }
 
 window.consultarPlacas=async function(){
-
 const contenedor=document.getElementById("tablaResultados");
 
 if(tablaVisible){
