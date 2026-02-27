@@ -439,12 +439,13 @@ window.location.href="mailto:"+destinatariosMailto+
 cerrarModal();
 }
 
-window.abrirApp=function(){
-window.location.href =
-"ms-outlook://compose?to="+
-encodeURIComponent(destinatariosWeb)+
+window.abrirWeb=function(){
+window.open(
+"https://outlook.office.com/mail/deeplink/compose?to="+encodeURIComponent(destinatariosWeb)+
 "&subject="+encodeURIComponent(window.asunto)+
-"&body="+encodeURIComponent(window.cuerpo);
+"&body="+encodeURIComponent(window.cuerpo),
+"_blank"
+);
 cerrarModal();
 }
 
