@@ -272,7 +272,22 @@ const btnGenerar=document.getElementById("btnGenerar");
 
 let tablaVisible=false;
 
-const destinatarios="jorge.silva@anam.gob.mx; vyc.altamira@anam.gob.mx; alejandra.munoz@anam.gob.mx; nayely.chavez@anam.gob.mx;miguel.herrera@anam.gob.mx;abraham.gomez@anam.gob.mx;daniel.santosh@anam.gob.mx;christian.monrreal@anam.gob.mx;monica.becerra@anam.gob.mx;anahi.santiago@anam.gob.mx";
+/* ✅ MODIFICACIÓN PARA SEPARAR CORREOS CORRECTAMENTE */
+const listaCorreos = [
+"jorge.silva@anam.gob.mx",
+"vyc.altamira@anam.gob.mx",
+"alejandra.munoz@anam.gob.mx",
+"nayely.chavez@anam.gob.mx",
+"miguel.herrera@anam.gob.mx",
+"abraham.gomez@anam.gob.mx",
+"daniel.santosh@anam.gob.mx",
+"christian.monrreal@anam.gob.mx",
+"monica.becerra@anam.gob.mx",
+"anahi.santiago@anam.gob.mx"
+];
+
+const destinatariosMailto = listaCorreos.join(",");
+const destinatariosWeb = listaCorreos.join(";");
 
 function validarFormulario(){
 btnGenerar.disabled = !form.checkValidity();
@@ -401,7 +416,7 @@ window.cuerpo=cuerpo;
 const esMovil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 if(esMovil){
-window.location.href="mailto:"+destinatarios+
+window.location.href="mailto:"+destinatariosMailto+
 "?subject="+encodeURIComponent(window.asunto)+
 "&body="+encodeURIComponent(window.cuerpo);
 }else{
@@ -418,7 +433,7 @@ document.getElementById("folio").textContent="--";
 });
 
 window.abrirApp=function(){
-window.location.href="mailto:"+destinatarios+
+window.location.href="mailto:"+destinatariosMailto+
 "?subject="+encodeURIComponent(window.asunto)+
 "&body="+encodeURIComponent(window.cuerpo);
 cerrarModal();
@@ -426,7 +441,7 @@ cerrarModal();
 
 window.abrirWeb=function(){
 window.open(
-"https://outlook.office.com/mail/deeplink/compose?to="+encodeURIComponent(destinatarios)+
+"https://outlook.office.com/mail/deeplink/compose?to="+encodeURIComponent(destinatariosWeb)+
 "&subject="+encodeURIComponent(window.asunto)+
 "&body="+encodeURIComponent(window.cuerpo),
 "_blank"
