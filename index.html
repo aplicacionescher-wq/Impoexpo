@@ -260,17 +260,6 @@ appId: "1:975848132753:web:cdb84e00b5d33006ffef30"
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-/* ===== ZONA HORARIA MÉXICO ===== */
-function getMexicoDate(){
-return new Date(new Date().toLocaleString("en-US",{timeZone:"America/Mexico_City"}));
-}
-function getMexicoISO(){
-return getMexicoDate().toISOString();
-}
-function getMexicoDateString(){
-return getMexicoISO().split("T")[0];
-}
-
 const form=document.getElementById("formRetorno");
 const tipo=document.getElementById("tipo");
 const mercanciaDiv=document.getElementById("mercanciaDiv");
@@ -283,7 +272,8 @@ const btnGenerar=document.getElementById("btnGenerar");
 
 let tablaVisible=false;
 
-const listaCorreos=[
+/* ✅ MODIFICACIÓN PARA SEPARAR CORREOS CORRECTAMENTE */
+const listaCorreos = [
 "jorge.silva@anam.gob.mx",
 "vyc.altamira@anam.gob.mx",
 "alejandra.munoz@anam.gob.mx",
@@ -296,20 +286,44 @@ const listaCorreos=[
 "anahi.santiago@anam.gob.mx"
 ];
 
-const destinatariosMailto=listaCorreos.join(",");
-const destinatariosWeb=listaCorreos.join(";");
+const destinatariosMailto = listaCorreos.join(",");
+const destinatariosWeb = listaCorreos.join(";");
+
+function validarFormulario(){
+btnGenerar.disabled = !form.checkValidity();
+}
+
+form.addEventListener("input", validarFormulario);
+tipo.addEventListener("change", validarFormulario);
+operacion.addEventListener("change", validarFormulario);
+
+placas.addEventListener("input",()=>{
+placas.value=placas.value.toUpperCase();
+validarFormulario();
+});
+
+tipo.addEventListener("change",()=>{
+if(tipo.value==="revision"){
+mercanciaDiv.classList.remove("hidden");
+mercancia.required=true;
+}else{
+mercanciaDiv.classList.add("hidden");
+mercancia.required=false;
+mercancia.value="";
+}
+validarFormulario();
+});
 
 function actualizarFecha(){
-document.getElementById("fechaHora").textContent=
-getMexicoDate().toLocaleString("es-MX",{timeZone:"America/Mexico_City"});
+document.getElementById("fechaHora").textContent=new Date().toLocaleString();
 }
 setInterval(actualizarFecha,1000);
 actualizarFecha();
 
-document.getElementById("fechaConsulta").value=getMexicoDateString();
+document.getElementById("fechaConsulta").value = new Date().toISOString().split("T")[0];
 
 async function generarFolio(){
-const hoy=getMexicoDate();
+const hoy=new Date();
 const base=hoy.getFullYear().toString()+
 ("0"+(hoy.getMonth()+1)).slice(-2)+
 ("0"+hoy.getDate()).slice(-2);
@@ -322,56 +336,100 @@ return "RET-"+base+"-"+result.snapshot.val().toString().padStart(3,"0");
 form.addEventListener("submit",async e=>{
 e.preventDefault();
 
+if(!form.checkValidity()){
+form.reportValidity();
+return;
+}
+
 const folio=await generarFolio();
 document.getElementById("folio").textContent=folio;
 
-const hora=getMexicoDate().getHours();
-let saludo="";
+const hora = new Date().getHours();
+let saludo = "";
 
-if(hora<12){saludo="Buenos días";}
-else if(hora<19){saludo="Buenas tardes";}
-else{saludo="Buenas noches";}
+if (hora < 12) {
+saludo = "Buenos días";
+} else if (hora < 19) {
+saludo = "Buenas tardes";
+} else {
+saludo = "Buenas noches";
+}
 
-let cuerpo=saludo+",\n\n";
+let cuerpo = saludo + ",\n\n";
 
-cuerpo+="PLACAS:\n"+placas.value+"\n\n"+
-"Saludos cordiales,\n"+
-operador.value+"\nMódulos\nANAM Altamira";
+if (tipo.value === "revision") {
+
+cuerpo += 
+"Solicito su valioso apoyo para la apertura del carril de excesos de exportación, para el ingreso de excesos de dimensiones y la revisión con sensor canino.\n\n" +
+"PLACAS:\n" + placas.value + "\n\n" +
+"MERCANCÍA:\n" + mercancia.value + "\n\n" +
+"Favor de dar parte al personal del módulo cuando la unidad sea revisada y contestar correo electrónico una vez efectuada la revisión canina.\n\n" +
+"Gracias.\n\n" +
+"Saludos cordiales,\n" +
+operador.value + "\n" +
+"Módulos\n" +
+"ANAM Altamira";
+
+} else {
+
+if (operacion.value === "EXPORTACION") {
+
+cuerpo +=
+"El presente correo es para solicitar la apertura del carril de excesos a la exportación para el retorno al vehículo con las placas siguientes:\n\n" +
+"PLACAS:\n" + placas.value + "\n\n" +
+"Tipo de retorno:\n" +
+tipo.options[tipo.selectedIndex].text + "\n\n" +
+"Gracias.\n\n" +
+"Saludos cordiales,\n" +
+operador.value + "\n" +
+"Módulos \n" +
+"ANAM Altamira";
+
+} else {
+
+cuerpo +=
+"El presente correo es para solicitar la apertura de la Puerta Caracol para el retorno al vehículo con las placas siguientes:\n\n" +
+placas.value + "\n\n" +
+"Tipo de retorno:\n" +
+tipo.options[tipo.selectedIndex].text + "\n\n" +
+"Gracias.\n\n" +
+"Saludos cordiales,\n" +
+operador.value + "\n" +
+"Módulos\n" +
+"ANAM Altamira";
+}
+}
 
 await push(ref(db,"retornos"),{
 folio,
-fecha:getMexicoISO(),
+fecha:new Date().toISOString(),
 operacion:operacion.value,
 operador:operador.value,
 tipo:tipo.value,
 placas:placas.value,
-mercancia:mercancia.value||""
+mercancia:mercancia.value || ""
 });
 
-window.asunto=operacion.value+" - "+tipo.options[tipo.selectedIndex].text;
+window.asunto = operacion.value + " - " + tipo.options[tipo.selectedIndex].text;
 window.cuerpo=cuerpo;
 
-const esMovil=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+const esMovil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 if(esMovil){
-
-const outlookURL="ms-outlook://compose?to="+encodeURIComponent(destinatariosMailto)+
-"&subject="+encodeURIComponent(window.asunto)+
+window.location.href="mailto:"+destinatariosMailto+
+"?subject="+encodeURIComponent(window.asunto)+
 "&body="+encodeURIComponent(window.cuerpo);
-
-window.location.href=outlookURL;
-
-setTimeout(function(){
-alert("Outlook no está instalado en este dispositivo.");
-},1500);
-
 }else{
 modal.style.display="flex";
 }
 
 form.reset();
+mercanciaDiv.classList.add("hidden");
+mercancia.required=false;
+mercancia.value="";
 btnGenerar.disabled=true;
 document.getElementById("folio").textContent="--";
+
 });
 
 window.abrirApp=function(){
@@ -395,10 +453,10 @@ window.cerrarModal=function(){
 modal.style.display="none";
 }
 
-window.consultarPlacas=async function(){
+window.consultarPlacas = async function(){
 
-const contenedor=document.getElementById("tablaResultados");
-const fechaInput=document.getElementById("fechaConsulta").value;
+const contenedor = document.getElementById("tablaResultados");
+const fechaInput = document.getElementById("fechaConsulta").value;
 
 if(tablaVisible){
 contenedor.innerHTML="";
@@ -406,9 +464,15 @@ tablaVisible=false;
 return;
 }
 
-const snapshot=await get(ref(db,"retornos"));
+const snapshot = await get(ref(db,"retornos"));
 
-let fechaFiltro=fechaInput||getMexicoDateString();
+let fechaFiltro;
+
+if(fechaInput){
+fechaFiltro = fechaInput;
+}else{
+fechaFiltro = new Date().toISOString().split("T")[0];
+}
 
 let html="<table><tr><th>Operador</th><th>Placas</th></tr>";
 
