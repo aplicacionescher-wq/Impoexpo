@@ -109,9 +109,7 @@ font-weight:bold;
 margin-top:6px;
 }
 
-button:hover{
-opacity:0.9;
-}
+button:hover{opacity:0.9;}
 
 button:disabled{
 background:#999;
@@ -220,7 +218,10 @@ Solicitud de Retornos Módulos
 
 <hr>
 
-<button type="button" onclick="consultarPlacas()">Consultar Placas del Día</button>
+<label>Seleccionar fecha (opcional)</label>
+<input type="date" id="fechaConsulta">
+
+<button type="button" onclick="consultarPlacas()">Consultar Placas</button>
 <button type="button" onclick="exportarExcel()">Exportar a Excel</button>
 
 <div id="tablaResultados"></div>
@@ -304,6 +305,8 @@ document.getElementById("fechaHora").textContent=new Date().toLocaleString();
 setInterval(actualizarFecha,1000);
 actualizarFecha();
 
+document.getElementById("fechaConsulta").value = new Date().toISOString().split("T")[0];
+
 async function generarFolio(){
 const hoy=new Date();
 const base=hoy.getFullYear().toString()+
@@ -326,68 +329,61 @@ return;
 const folio=await generarFolio();
 document.getElementById("folio").textContent=folio;
 
-/* =======================
-   CUERPO MODIFICADO
-======================= */
-
 const hora = new Date().getHours();
 let saludo = "";
 
 if (hora < 12) {
-  saludo = "Buenos días";
+saludo = "Buenos días";
 } else if (hora < 19) {
-  saludo = "Buenas tardes";
+saludo = "Buenas tardes";
 } else {
-  saludo = "Buenas noches";
+saludo = "Buenas noches";
 }
 
 let cuerpo = saludo + ",\n\n";
 
 if (tipo.value === "revision") {
 
-  cuerpo += 
-  "Solicito su valioso apoyo para la apertura del carril de excesos de exportación, para el ingreso de excesos de dimensiones y la revisión con sensor canino.\n\n" +
-  "PLACAS:\n" + placas.value + "\n\n" +
-  "MERCANCÍA:\n" + mercancia.value + "\n\n" +
-  "Favor de dar parte al personal del módulo cuando la unidad sea revisada y contestar correo electrónico una vez efectuada la revisión canina.\n\n" +
-  "Gracias.\n\n" +
-  "Saludos cordiales,\n" +
-  operador.value + "\n" +
-  "Módulos\n" +
-  "ANAM Altamira";
+cuerpo += 
+"Solicito su valioso apoyo para la apertura del carril de excesos de exportación, para el ingreso de excesos de dimensiones y la revisión con sensor canino.\n\n" +
+"PLACAS:\n" + placas.value + "\n\n" +
+"MERCANCÍA:\n" + mercancia.value + "\n\n" +
+"Favor de dar parte al personal del módulo cuando la unidad sea revisada y contestar correo electrónico una vez efectuada la revisión canina.\n\n" +
+"Gracias.\n\n" +
+"Saludos cordiales,\n" +
+operador.value + "\n" +
+"Módulos\n" +
+"ANAM Altamira";
 
 } else {
 
-  if (operacion.value === "EXPORTACION") {
+if (operacion.value === "EXPORTACION") {
 
-    cuerpo +=
-    "El presente correo es para solicitar la apertura del carril de excesos a la exportación para el retorno al vehículo con las placas siguientes:\n\n" +
-    "PLACAS:\n" + placas.value + "\n\n" +
-    "Tipo de retorno:\n" +
-    tipo.options[tipo.selectedIndex].text + "\n\n" +
-    "Gracias.\n\n" +
-    "Saludos cordiales,\n" +
-    operador.value + "\n" +
-    "Módulos \n" +
-    "ANAM Altamira";
+cuerpo +=
+"El presente correo es para solicitar la apertura del carril de excesos a la exportación para el retorno al vehículo con las placas siguientes:\n\n" +
+"PLACAS:\n" + placas.value + "\n\n" +
+"Tipo de retorno:\n" +
+tipo.options[tipo.selectedIndex].text + "\n\n" +
+"Gracias.\n\n" +
+"Saludos cordiales,\n" +
+operador.value + "\n" +
+"Módulos \n" +
+"ANAM Altamira";
 
-  } else {
+} else {
 
-    cuerpo +=
-    "El presente correo es para solicitar la apertura de la Puerta Caracol para el retorno al vehículo con las placas siguientes:\n\n" +
-    placas.value + "\n\n" +
-    "Tipo de retorno:\n" +
-    tipo.options[tipo.selectedIndex].text + "\n\n" +
-    "Gracias.\n\n" +
-    "Saludos cordiales,\n" +
-    operador.value + "\n" +
-    "Módulos\n" +
-    "ANAM Altamira";
-  }
-
+cuerpo +=
+"El presente correo es para solicitar la apertura de la Puerta Caracol para el retorno al vehículo con las placas siguientes:\n\n" +
+placas.value + "\n\n" +
+"Tipo de retorno:\n" +
+tipo.options[tipo.selectedIndex].text + "\n\n" +
+"Gracias.\n\n" +
+"Saludos cordiales,\n" +
+operador.value + "\n" +
+"Módulos\n" +
+"ANAM Altamira";
 }
-
-/* ======================= */
+}
 
 await push(ref(db,"retornos"),{
 folio,
@@ -399,17 +395,26 @@ placas:placas.value,
 mercancia:mercancia.value || ""
 });
 
-window.asunto = operacion.value + " - " +
-tipo.options[tipo.selectedIndex].text;
-
+window.asunto = operacion.value + " - " + tipo.options[tipo.selectedIndex].text;
 window.cuerpo=cuerpo;
 
 const esMovil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 if(esMovil){
-window.location.href="mailto:"+destinatarios+
-"?subject="+encodeURIComponent(window.asunto)+
-"&body="+encodeURIComponent(window.cuerpo);
+
+window.location.href =
+"ms-outlook://compose?" +
+"to=" + encodeURIComponent(destinatarios) +
+"&subject=" + encodeURIComponent(window.asunto) +
+"&body=" + encodeURIComponent(window.cuerpo);
+
+setTimeout(()=>{
+window.location.href =
+"mailto:" + destinatarios +
+"?subject=" + encodeURIComponent(window.asunto) +
+"&body=" + encodeURIComponent(window.cuerpo);
+},1500);
+
 }else{
 modal.style.display="flex";
 }
@@ -444,8 +449,10 @@ window.cerrarModal=function(){
 modal.style.display="none";
 }
 
-window.consultarPlacas=async function(){
-const contenedor=document.getElementById("tablaResultados");
+window.consultarPlacas = async function(){
+
+const contenedor = document.getElementById("tablaResultados");
+const fechaInput = document.getElementById("fechaConsulta").value;
 
 if(tablaVisible){
 contenedor.innerHTML="";
@@ -453,14 +460,21 @@ tablaVisible=false;
 return;
 }
 
-const snapshot=await get(ref(db,"retornos"));
-let hoy=new Date().toISOString().split("T")[0];
+const snapshot = await get(ref(db,"retornos"));
+
+let fechaFiltro;
+
+if(fechaInput){
+fechaFiltro = fechaInput;
+}else{
+fechaFiltro = new Date().toISOString().split("T")[0];
+}
 
 let html="<table><tr><th>Operador</th><th>Placas</th></tr>";
 
 snapshot.forEach(doc=>{
 let d=doc.val();
-if(d.fecha.startsWith(hoy)){
+if(d.fecha.startsWith(fechaFiltro)){
 html+="<tr><td>"+d.operador+"</td><td>"+d.placas+"</td></tr>";
 }
 });
