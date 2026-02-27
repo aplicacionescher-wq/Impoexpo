@@ -401,20 +401,9 @@ window.cuerpo=cuerpo;
 const esMovil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 if(esMovil){
-
-window.location.href =
-"ms-outlook://compose?" +
-"to=" + encodeURIComponent(destinatarios) +
-"&subject=" + encodeURIComponent(window.asunto) +
-"&body=" + encodeURIComponent(window.cuerpo);
-
-setTimeout(()=>{
-window.location.href =
-"mailto:" + destinatarios +
-"?subject=" + encodeURIComponent(window.asunto) +
-"&body=" + encodeURIComponent(window.cuerpo);
-},1500);
-
+window.location.href="mailto:"+destinatarios+
+"?subject="+encodeURIComponent(window.asunto)+
+"&body="+encodeURIComponent(window.cuerpo);
 }else{
 modal.style.display="flex";
 }
