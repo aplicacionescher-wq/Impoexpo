@@ -272,8 +272,8 @@ const btnGenerar=document.getElementById("btnGenerar");
 
 let tablaVisible=false;
 
-/* ✅ MODIFICACIÓN PARA SEPARAR CORREOS CORRECTAMENTE */
-const listaCorreos = [
+/* ✅ LISTAS DE CORREOS DEFINIDAS */
+const listaCorreosBase = [
 "juan.reyesg@anam.gob.mx",
 "vyc.altamira@anam.gob.mx",
 "alejandra.munoz@anam.gob.mx",
@@ -285,8 +285,11 @@ const listaCorreos = [
 "anahi.santiago@anam.gob.mx"
 ];
 
-const destinatariosMailto = listaCorreos.join(",");
-const destinatariosWeb = listaCorreos.join(";");
+const correosExtrasRevision = [
+"emilio.garin@anam.gob.mx",
+"sergio.diazr@anam.gob.mx",
+"oscar.narro@anam.gob.mx"
+];
 
 function validarFormulario(){
 btnGenerar.disabled = !form.checkValidity();
@@ -339,6 +342,20 @@ if(!form.checkValidity()){
 form.reportValidity();
 return;
 }
+
+/* ✅ LÓGICA DE DESTINATARIOS DINÁMICOS */
+let correosFinales = [...listaCorreosBase];
+
+if (tipo.value === "revision") {
+    correosFinales = correosFinales.concat(correosExtrasRevision);
+}
+
+const destinatariosMailto = correosFinales.join(",");
+const destinatariosWeb = correosFinales.join(";");
+
+// Guardamos en window para uso de los botones del modal
+window.destinatariosMailto = destinatariosMailto;
+window.destinatariosWeb = destinatariosWeb;
 
 const folio=await generarFolio();
 document.getElementById("folio").textContent=folio;
@@ -416,7 +433,7 @@ window.cuerpo=cuerpo;
 const esMovil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 if(esMovil){
-window.location.href="mailto:"+destinatariosMailto+
+window.location.href="mailto:"+window.destinatariosMailto+
 "?subject="+encodeURIComponent(window.asunto)+
 "&body="+encodeURIComponent(window.cuerpo);
 }else{
@@ -433,7 +450,7 @@ document.getElementById("folio").textContent="--";
 });
 
 window.abrirApp=function(){
-window.location.href="mailto:"+destinatariosMailto+
+window.location.href="mailto:"+window.destinatariosMailto+
 "?subject="+encodeURIComponent(window.asunto)+
 "&body="+encodeURIComponent(window.cuerpo);
 cerrarModal();
@@ -441,7 +458,7 @@ cerrarModal();
 
 window.abrirWeb=function(){
 window.open(
-"https://outlook.office.com/mail/deeplink/compose?to="+encodeURIComponent(destinatariosWeb)+
+"https://outlook.office.com/mail/deeplink/compose?to="+encodeURIComponent(window.destinatariosWeb)+
 "&subject="+encodeURIComponent(window.asunto)+
 "&body="+encodeURIComponent(window.cuerpo),
 "_blank"
