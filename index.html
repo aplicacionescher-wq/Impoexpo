@@ -382,18 +382,15 @@ Solicitud de Retornos Módulos
 
 <select id="operacion" required>
 
-<option>IMPORTACION</option>
 
 <option selected>EXPORTACION</option>
 
 </select>
 
 
-
 <label>Operador</label>
 
 <input type="text" id="operador" required>
-
 
 
 <label>Tipo de Solicitud</label>
@@ -408,10 +405,9 @@ Solicitud de Retornos Módulos
 
 <option value="carril">Retorno Por Equivocación de Carril</option>
 
-<option value="revision">Solicitud de Revisión De Mercancía Sobre-Dimensionada</option>
+<option value="revision">Solicitud de Revisión Con ZBV de Mercancía Sobre-Dimensionada</option>
 
 </select>
-
 
 
 <label>Placas</label>
@@ -433,9 +429,7 @@ Solicitud de Retornos Módulos
 <button type="submit" id="btnGenerar" disabled>Generar Correo</button>
 
 
-
 <hr>
-
 
 
 <label>Seleccionar fecha (opcional)</label>
@@ -443,15 +437,12 @@ Solicitud de Retornos Módulos
 <input type="date" id="fechaConsulta">
 
 
-
 <button type="button" onclick="consultarPlacas()">Consultar Placas</button>
 
 <button type="button" onclick="exportarExcel()">Exportar a Excel</button>
 
 
-
 <div id="tablaResultados"></div>
-
 
 
 </form>
@@ -459,13 +450,11 @@ Solicitud de Retornos Módulos
 </div>
 
 
-
 <div class="footer">
 
 © 2026 Agencia Nacional de Aduanas de México
 
 </div>
-
 
 
 <div id="selectorModal" class="modal">
